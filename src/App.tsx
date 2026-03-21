@@ -171,7 +171,7 @@ function Navbar() {
     return () => window.removeEventListener('scroll', handler)
   }, [])
 
-  const navItems = ['Leistungen', 'Pakete', 'Prozess', 'Kontakt']
+  const navItems = ['Leistungen', 'Portfolio', 'Pakete', 'Kontakt']
 
   return (
     <nav style={{
@@ -459,45 +459,133 @@ function Process() {
   )
 }
 
-function Testimonials() {
-  const reviews = [
-    { name: 'Laura M.', role: 'Yoga Studio', text: 'Endlich eine Website, auf die ich stolz bin. Schnell, unkompliziert, einfach mega.', rating: 5 },
-    { name: 'Markus B.', role: 'IT-Service', text: 'Professionell, modern, und der Preis stimmt. Klare Empfehlung!', rating: 5 },
-    { name: 'Sarah K.', role: 'Freelancerin', text: 'Mein Portfolio sieht jetzt aus wie von einer teuren Agentur. Aber bezahlbar.', rating: 5 },
+function Portfolio() {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  
+  const projects = [
+    { 
+      title: 'Bella Vista', 
+      category: 'Restaurant & Bistro', 
+      image: '/portfolio-bistro.png',
+      color: '#f5a623'
+    },
+    { 
+      title: 'Meister Müller', 
+      category: 'Handwerker & Service', 
+      image: '/portfolio-handwerker.png',
+      color: '#2997ff'
+    },
+    { 
+      title: 'Power Fit', 
+      category: 'Fitness & Gesundheit', 
+      image: '/portfolio-fitness.png',
+      color: '#34c759'
+    },
   ]
 
   return (
-    <section style={{ padding: '10rem 2rem' }}>
+    <section id="portfolio" style={{ padding: '10rem 2rem' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <FadeIn>
-          <p style={{ color: '#34c759', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Kundenstimmen</p>
+          <p style={{ color: '#34c759', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Portfolio</p>
         </FadeIn>
         <FadeIn delay={0.1}>
-          <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 700, textAlign: 'center', marginBottom: '5rem', letterSpacing: '-0.03em' }}>
-            Was andere sagen.
+          <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 700, textAlign: 'center', marginBottom: '1rem', letterSpacing: '-0.03em' }}>
+            Unsere Arbeiten.
           </h2>
         </FadeIn>
+        <FadeIn delay={0.2}>
+          <p style={{ fontSize: '1.25rem', color: 'rgba(255, 255, 255, 0.6)', textAlign: 'center', maxWidth: '500px', margin: '0 auto 5rem' }}>
+            Ein Auszug aus unseren Projekten.
+          </p>
+        </FadeIn>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-          {reviews.map((r, i) => (
-            <FadeIn key={i} delay={0.1 * i}>
-              <Card>
-                <div style={{ display: 'flex', gap: '2px', marginBottom: '1.25rem' }}>
-                  {Array(r.rating).fill(0).map((_, j) => <Star key={j} size={16} fill="#f5a623" color="#f5a623" />)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '2rem' }}>
+          {projects.map((project, i) => (
+            <FadeIn key={i} delay={0.15 * i}>
+              <div
+                onMouseEnter={() => setHoveredIndex(i)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                style={{
+                  position: 'relative',
+                  borderRadius: '24px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  transform: hoveredIndex === i ? 'scale(1.03) translateY(-8px)' : 'scale(1)',
+                  transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                  boxShadow: hoveredIndex === i ? `0 30px 60px ${project.color}33, 0 0 0 1px rgba(255,255,255,0.1)` : '0 0 0 1px rgba(255,255,255,0.08)',
+                }}
+              >
+                {/* Image */}
+                <div style={{ 
+                  aspectRatio: '4/3', 
+                  overflow: 'hidden',
+                  background: 'rgba(255,255,255,0.02)',
+                }}>
+                  <img 
+                    src={project.image} 
+                    alt={project.title}
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover',
+                      transform: hoveredIndex === i ? 'scale(1.1)' : 'scale(1)',
+                      transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }} 
+                  />
                 </div>
-                <p style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.0625rem', lineHeight: 1.7, marginBottom: '1.5rem', fontStyle: 'italic' }}>
-                  "{r.text}"
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #2997ff, #af52de)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
-                    {r.name[0]}
-                  </div>
-                  <div>
-                    <p style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{r.name}</p>
-                    <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.8125rem' }}>{r.role}</p>
+
+                {/* Overlay */}
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: `linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)`,
+                  opacity: hoveredIndex === i ? 1 : 0.7,
+                  transition: 'opacity 0.4s ease',
+                }} />
+
+                {/* Content */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  padding: '2rem',
+                  transform: hoveredIndex === i ? 'translateY(0)' : 'translateY(10px)',
+                  transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                }}>
+                  <p style={{ 
+                    color: project.color, 
+                    fontSize: '0.8125rem', 
+                    fontWeight: 600, 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.1em',
+                    marginBottom: '0.5rem',
+                  }}>
+                    {project.category}
+                  </p>
+                  <h3 style={{ 
+                    fontSize: '1.75rem', 
+                    fontWeight: 700, 
+                    letterSpacing: '-0.02em',
+                    marginBottom: '0.75rem',
+                  }}>
+                    {project.title}
+                  </h3>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    color: 'rgba(255,255,255,0.7)',
+                    fontSize: '0.9375rem',
+                    opacity: hoveredIndex === i ? 1 : 0,
+                    transform: hoveredIndex === i ? 'translateY(0)' : 'translateY(10px)',
+                    transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s',
+                  }}>
+                    Projekt ansehen <ArrowRight size={16} />
                   </div>
                 </div>
-              </Card>
+              </div>
             </FadeIn>
           ))}
         </div>
@@ -659,7 +747,7 @@ export default function App() {
       <Services />
       <Packages />
       <Process />
-      <Testimonials />
+      <Portfolio />
       <CTA />
       <Contact />
       <Footer />
