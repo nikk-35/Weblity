@@ -2,6 +2,163 @@ import { useState, useEffect, useRef, type ReactNode, type CSSProperties } from 
 import { Menu, X, ArrowRight, Check, Star, Globe, Smartphone, ShoppingBag, Code, Mail, Instagram, Linkedin, Sparkles, Play } from 'lucide-react'
 
 // ============================================================================
+// INTRO ANIMATION
+// ============================================================================
+
+function IntroAnimation({ onComplete }: { onComplete: () => void }) {
+  const [phase, setPhase] = useState(0)
+  // Phase 0: Dark, Phase 1: Logo glitch in, Phase 2: Burst, Phase 3: Fade out
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setPhase(1), 200),      // Start logo animation
+      setTimeout(() => setPhase(2), 1200),     // Burst effect
+      setTimeout(() => setPhase(3), 1800),     // Start fade out
+      setTimeout(() => onComplete(), 2400),    // Complete
+    ]
+    return () => timers.forEach(clearTimeout)
+  }, [onComplete])
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 9999,
+      background: '#000',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      opacity: phase >= 3 ? 0 : 1,
+      transition: 'opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+      pointerEvents: phase >= 3 ? 'none' : 'auto',
+    }}>
+      {/* Radial burst */}
+      <div style={{
+        position: 'absolute',
+        width: phase >= 2 ? '300vmax' : '0',
+        height: phase >= 2 ? '300vmax' : '0',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(41, 151, 255, 0.3) 0%, rgba(175, 82, 222, 0.2) 30%, transparent 70%)',
+        transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+        opacity: phase >= 3 ? 0 : 1,
+      }} />
+
+      {/* Particles */}
+      {phase >= 2 && Array.from({ length: 20 }).map((_, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          width: '4px',
+          height: '4px',
+          borderRadius: '50%',
+          background: i % 2 === 0 ? '#2997ff' : '#af52de',
+          animation: `particle-${i % 4} 1s cubic-bezier(0.16, 1, 0.3, 1) forwards`,
+          opacity: phase >= 3 ? 0 : 1,
+          transition: 'opacity 0.3s',
+        }} />
+      ))}
+
+      {/* Logo */}
+      <div style={{
+        position: 'relative',
+        transform: phase >= 1 ? 'scale(1)' : 'scale(0.8)',
+        opacity: phase >= 1 ? 1 : 0,
+        transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+        filter: phase === 1 ? 'blur(0px)' : phase === 0 ? 'blur(20px)' : 'blur(0px)',
+      }}>
+        {/* Glitch layers */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          animation: phase === 1 ? 'glitch-1 0.3s ease-in-out 3' : 'none',
+          opacity: 0.5,
+        }}>
+          <span style={{ fontFamily: 'SF Pro Display, -apple-system, sans-serif', fontWeight: 700, fontSize: 'clamp(3rem, 15vw, 8rem)', color: '#ff0080', letterSpacing: '-0.03em' }}>
+            weblity
+          </span>
+        </div>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          animation: phase === 1 ? 'glitch-2 0.3s ease-in-out 3' : 'none',
+          opacity: 0.5,
+        }}>
+          <span style={{ fontFamily: 'SF Pro Display, -apple-system, sans-serif', fontWeight: 700, fontSize: 'clamp(3rem, 15vw, 8rem)', color: '#00ffff', letterSpacing: '-0.03em' }}>
+            weblity
+          </span>
+        </div>
+        
+        {/* Main logo */}
+        <span style={{ fontFamily: 'SF Pro Display, -apple-system, sans-serif', fontWeight: 700, fontSize: 'clamp(3rem, 15vw, 8rem)', letterSpacing: '-0.03em', position: 'relative' }}>
+          <span style={{ color: '#fff' }}>web</span>
+          <span style={{ background: 'linear-gradient(135deg, #2997ff, #af52de)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>lity</span>
+        </span>
+      </div>
+
+      {/* Ring burst */}
+      <div style={{
+        position: 'absolute',
+        width: phase >= 2 ? '200px' : '100px',
+        height: phase >= 2 ? '200px' : '100px',
+        borderRadius: '50%',
+        border: '2px solid rgba(41, 151, 255, 0.5)',
+        opacity: phase >= 2 ? 0 : phase >= 1 ? 0.5 : 0,
+        transform: phase >= 2 ? 'scale(10)' : 'scale(1)',
+        transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+      }} />
+      <div style={{
+        position: 'absolute',
+        width: phase >= 2 ? '150px' : '80px',
+        height: phase >= 2 ? '150px' : '80px',
+        borderRadius: '50%',
+        border: '2px solid rgba(175, 82, 222, 0.5)',
+        opacity: phase >= 2 ? 0 : phase >= 1 ? 0.5 : 0,
+        transform: phase >= 2 ? 'scale(15)' : 'scale(1)',
+        transition: 'all 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s',
+      }} />
+
+      <style>{`
+        @keyframes glitch-1 {
+          0%, 100% { transform: translate(0); }
+          20% { transform: translate(-3px, 3px); }
+          40% { transform: translate(3px, -3px); }
+          60% { transform: translate(-3px, -3px); }
+          80% { transform: translate(3px, 3px); }
+        }
+        @keyframes glitch-2 {
+          0%, 100% { transform: translate(0); }
+          20% { transform: translate(3px, -3px); }
+          40% { transform: translate(-3px, 3px); }
+          60% { transform: translate(3px, 3px); }
+          80% { transform: translate(-3px, -3px); }
+        }
+        @keyframes particle-0 {
+          0% { transform: translate(0, 0) scale(1); opacity: 1; }
+          100% { transform: translate(-180px, -150px) scale(0); opacity: 0; }
+        }
+        @keyframes particle-1 {
+          0% { transform: translate(0, 0) scale(1); opacity: 1; }
+          100% { transform: translate(200px, -120px) scale(0); opacity: 0; }
+        }
+        @keyframes particle-2 {
+          0% { transform: translate(0, 0) scale(1); opacity: 1; }
+          100% { transform: translate(-150px, 180px) scale(0); opacity: 0; }
+        }
+        @keyframes particle-3 {
+          0% { transform: translate(0, 0) scale(1); opacity: 1; }
+          100% { transform: translate(170px, 140px) scale(0); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+// ============================================================================
 // HOOKS
 // ============================================================================
 
@@ -722,8 +879,17 @@ function Footer() {
 // ============================================================================
 
 export default function App() {
+  const [showIntro, setShowIntro] = useState(true)
+  const [contentReady, setContentReady] = useState(false)
+
+  useEffect(() => {
+    // Start loading content immediately but don't show until intro is done
+    setContentReady(true)
+  }, [])
+
   return (
     <>
+      {showIntro && <IntroAnimation onComplete={() => setShowIntro(false)} />}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
