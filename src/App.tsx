@@ -301,7 +301,7 @@ function Services() {
   ]
 
   return (
-    <section id="leistungen" style={{ padding: '10rem 2rem', position: 'relative' }}>
+    <section id="leistungen" style={{ padding: '10rem 2rem', position: 'relative', overflow: 'hidden' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <FadeIn>
           <p style={{ color: '#2997ff', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Leistungen</p>
@@ -348,9 +348,9 @@ function Packages() {
   ]
 
   return (
-    <section id="pakete" style={{ padding: '10rem 2rem', position: 'relative' }}>
+    <section id="pakete" style={{ padding: '10rem 2rem', position: 'relative', overflow: 'hidden' }}>
       {/* Glow */}
-      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '800px', height: '600px', background: 'radial-gradient(ellipse, rgba(41, 151, 255, 0.08), transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 'min(800px, 100vw)', height: '600px', background: 'radial-gradient(ellipse, rgba(41, 151, 255, 0.08), transparent 70%)', pointerEvents: 'none' }} />
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
         <FadeIn>
@@ -422,7 +422,7 @@ function Process() {
   ]
 
   return (
-    <section id="prozess" style={{ padding: '10rem 2rem' }}>
+    <section id="prozess" style={{ padding: '10rem 2rem', overflow: 'hidden' }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
         <FadeIn>
           <p style={{ color: '#ff6b6b', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Prozess</p>
@@ -484,7 +484,7 @@ function Portfolio() {
   ]
 
   return (
-    <section id="portfolio" style={{ padding: '10rem 2rem' }}>
+    <section id="portfolio" style={{ padding: '10rem 2rem', overflow: 'hidden' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <FadeIn>
           <p style={{ color: '#34c759', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Portfolio</p>
@@ -632,7 +632,7 @@ function Contact() {
   }
 
   return (
-    <section id="kontakt" style={{ padding: '10rem 2rem' }}>
+    <section id="kontakt" style={{ padding: '10rem 2rem', overflow: 'hidden' }}>
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
         <FadeIn>
           <p style={{ color: '#2997ff', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Kontakt</p>
@@ -727,13 +727,17 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; font-size: 16px; }
+        html { scroll-behavior: smooth; font-size: 16px; overflow-x: hidden; }
         body { 
           font-family: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
           background: #000; color: #fff; overflow-x: hidden; 
           -webkit-font-smoothing: antialiased;
           -webkit-text-size-adjust: 100%;
+          position: relative;
+          width: 100%;
+          max-width: 100vw;
         }
+        #root { overflow-x: hidden; width: 100%; max-width: 100vw; }
         ::selection { background: rgba(41, 151, 255, 0.4); }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #000; }
@@ -744,7 +748,12 @@ export default function App() {
         @keyframes scrollPulse { 0%, 100% { opacity: 0.5; transform: translateY(0); } 50% { opacity: 1; transform: translateY(4px); } }
         
         /* Mobile First - Base Styles */
-        section { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+        section { 
+          padding-left: 1.25rem !important; 
+          padding-right: 1.25rem !important; 
+          overflow-x: hidden !important;
+          max-width: 100vw !important;
+        }
         
         /* Tablet and up */
         @media (min-width: 768px) {
@@ -772,16 +781,18 @@ export default function App() {
           section { padding-left: 1rem !important; padding-right: 1rem !important; }
         }
       `}</style>
-      <ProgressBar />
-      <Navbar />
-      <Hero />
-      <Services />
-      <Packages />
-      <Process />
-      <Portfolio />
-      <CTA />
-      <Contact />
-      <Footer />
+      <div style={{ overflowX: 'hidden', width: '100%', maxWidth: '100vw' }}>
+        <ProgressBar />
+        <Navbar />
+        <Hero />
+        <Services />
+        <Packages />
+        <Process />
+        <Portfolio />
+        <CTA />
+        <Contact />
+        <Footer />
+      </div>
     </>
   )
 }
