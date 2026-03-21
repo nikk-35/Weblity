@@ -317,7 +317,7 @@ function Services() {
           </p>
         </FadeIn>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '1.5rem' }}>
           {services.map((s, i) => (
             <FadeIn key={i} delay={0.1 * i}>
               <Card>
@@ -367,7 +367,7 @@ function Packages() {
           </p>
         </FadeIn>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '2rem', alignItems: 'start' }}>
           {packages.map((pkg, i) => (
             <FadeIn key={i} delay={0.15 * i}>
               <div style={{ position: 'relative' }}>
@@ -500,7 +500,7 @@ function Portfolio() {
           </p>
         </FadeIn>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(340px, 100%), 1fr))', gap: '2rem' }}>
           {projects.map((project, i) => (
             <FadeIn key={i} delay={0.15 * i}>
               <div
@@ -651,7 +651,7 @@ function Contact() {
         <FadeIn delay={0.3}>
           <Card hover={false}>
             <form style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }} onSubmit={e => { e.preventDefault(); alert('Nachricht gesendet! ✨') }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: '1.25rem' }}>
                 <input type="text" placeholder="Dein Name" required style={inputStyle}
                   onFocus={e => { e.currentTarget.style.borderColor = 'rgba(41, 151, 255, 0.5)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)' }}
                   onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)' }} />
@@ -727,18 +727,49 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #000; color: #fff; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        html { scroll-behavior: smooth; font-size: 16px; }
+        body { 
+          font-family: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+          background: #000; color: #fff; overflow-x: hidden; 
+          -webkit-font-smoothing: antialiased;
+          -webkit-text-size-adjust: 100%;
+        }
         ::selection { background: rgba(41, 151, 255, 0.4); }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+        
         @keyframes bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-8px); } }
         @keyframes scrollPulse { 0%, 100% { opacity: 0.5; transform: translateY(0); } 50% { opacity: 1; transform: translateY(4px); } }
+        
+        /* Mobile First - Base Styles */
+        section { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+        
+        /* Tablet and up */
         @media (min-width: 768px) {
           .nav-links { display: flex !important; }
           .menu-btn { display: none !important; }
+          section { padding-left: 2rem !important; padding-right: 2rem !important; }
+        }
+        
+        /* Mobile Adjustments */
+        @media (max-width: 767px) {
+          html { font-size: 15px; }
+          h1, h2 { letter-spacing: -0.02em !important; }
+          
+          /* Better touch targets */
+          button, a { min-height: 44px; }
+          input, select, textarea { font-size: 16px !important; } /* Prevents iOS zoom */
+          
+          /* Cards full width */
+          .card-grid { grid-template-columns: 1fr !important; }
+        }
+        
+        /* Small phones */
+        @media (max-width: 380px) {
+          html { font-size: 14px; }
+          section { padding-left: 1rem !important; padding-right: 1rem !important; }
         }
       `}</style>
       <ProgressBar />
