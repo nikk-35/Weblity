@@ -1,45 +1,116 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { Menu, X, ArrowRight, Check, Star, Zap, Globe, Smartphone, ShoppingBag, Code, ChevronRight, Mail, Instagram, Linkedin, MousePointer2, Sparkles, Layers } from 'lucide-react'
 
-// === SCROLL REVEAL HOOK ===
-function useReveal() {
+// === ANIMATE ON SCROLL ===
+function Reveal({ children, delay = 0, className = '' }: { children: ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+
   useEffect(() => {
     const el = ref.current
     if (!el) return
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { el.classList.add('visible'); obs.unobserve(el) } },
-      { threshold: 0.15 }
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.unobserve(el) } },
+      { threshold: 0.1 }
     )
     obs.observe(el)
     return () => obs.disconnect()
   }, [])
-  return ref
-}
 
-// === MOUSE GLOW HOOK ===
-function useMouseGlow(ref: React.RefObject<HTMLElement | null>) {
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const handler = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect()
-      el.style.setProperty('--mx', `${e.clientX - rect.left}px`)
-      el.style.setProperty('--my', `${e.clientY - rect.top}px`)
-    }
-    el.addEventListener('mousemove', handler)
-    return () => el.removeEventListener('mousemove', handler)
-  }, [ref])
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(40px)',
+        transition: `all 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  )
 }
 
 // === LOGO ===
-function Logo({ size = 'default' }: { size?: 'default' | 'large' | 'hero' }) {
-  const sizes = { default: 'text-2xl', large: 'text-5xl md:text-6xl', hero: 'text-6xl md:text-8xl lg:text-9xl' }
+function Logo({ size = 'default' }: { size?: 'default' | 'hero' }) {
+  const s = size === 'hero' ? 'text-7xl md:text-9xl' : 'text-2xl'
   return (
-    <span className={`font-extrabold ${sizes[size]} tracking-tight`} style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <span className={`font-extrabold ${s} tracking-tight`} style={{ fontFamily: 'Poppins, sans-serif' }}>
       <span className="text-white">web</span>
-      <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">lity</span>
+      <span style={{ background: 'linear-gradient(135deg, #00d4ff, #7b2ff7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>lity</span>
     </span>
+  )
+}
+
+// === GLASS CARD ===
+function GlassCard({ children, hover = true, glow = false, className = '' }: { children: ReactNode; hover?: boolean; glow?: boolean; className?: string }) {
+  return (
+    <div
+      className={className}
+      style={{
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '1.5rem',
+        padding: '2rem',
+        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+        ...(glow ? { boxShadow: '0 0 40px rgba(0,212,255,0.12), 0 0 80px rgba(123,47,247,0.06)' } : {}),
+      }}
+      onMouseEnter={hover ? (e) => {
+        const el = e.currentTarget as HTMLElement
+        el.style.transform = 'translateY(-8px) scale(1.02)'
+        el.style.borderColor = 'rgba(255,255,255,0.16)'
+        el.style.boxShadow = '0 30px 60px -12px rgba(0,212,255,0.15), 0 0 40px rgba(123,47,247,0.08)'
+      } : undefined}
+      onMouseLeave={hover ? (e) => {
+        const el = e.currentTarget as HTMLElement
+        el.style.transform = ''
+        el.style.borderColor = 'rgba(255,255,255,0.08)'
+        el.style.boxShadow = glow ? '0 0 40px rgba(0,212,255,0.12)' : 'none'
+      } : undefined}
+    >
+      {children}
+    </div>
+  )
+}
+
+// === GRADIENT BUTTON ===
+function GradientBtn({ children, href, large = false, className = '' }: { children: ReactNode; href: string; large?: boolean; className?: string }) {
+  return (
+    <a
+      href={href}
+      className={className}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '0.75rem',
+        padding: large ? '1.25rem 2.5rem' : '0.75rem 1.75rem',
+        borderRadius: '1rem',
+        fontWeight: 600,
+        fontSize: large ? '1.125rem' : '0.875rem',
+        color: '#fff',
+        background: 'linear-gradient(135deg, #00b4d8, #7b2ff7)',
+        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+        cursor: 'pointer',
+        border: 'none',
+        textDecoration: 'none',
+      }}
+      onMouseEnter={(e) => {
+        const el = e.currentTarget as HTMLElement
+        el.style.transform = 'translateY(-3px) scale(1.03)'
+        el.style.boxShadow = '0 20px 40px rgba(0,212,255,0.3), 0 0 60px rgba(123,47,247,0.15)'
+      }}
+      onMouseLeave={(e) => {
+        const el = e.currentTarget as HTMLElement
+        el.style.transform = ''
+        el.style.boxShadow = 'none'
+      }}
+    >
+      {children}
+    </a>
   )
 }
 
@@ -55,160 +126,170 @@ function Navbar() {
   }, [])
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'glass-strong py-3' : 'py-5'}`}>
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <a href="#" className="relative group">
-          <Logo />
-          <span className="absolute -inset-2 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        </a>
+    <nav style={{
+      position: 'fixed', top: 0, width: '100%', zIndex: 50,
+      backdropFilter: 'blur(20px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+      background: scrolled ? 'rgba(10,15,28,0.85)' : 'rgba(10,15,28,0.5)',
+      borderBottom: '1px solid rgba(255,255,255,0.05)',
+      transition: 'all 0.5s ease',
+    }}>
+      <div style={{ maxWidth: '80rem', margin: '0 auto', padding: scrolled ? '0.75rem 1.5rem' : '1.25rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'padding 0.5s ease' }}>
+        <a href="#" style={{ textDecoration: 'none' }}><Logo /></a>
 
-        <div className="hidden md:flex items-center gap-10">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }} className="hidden md:flex">
           {['Leistungen', 'Pakete', 'Prozess', 'Kontakt'].map(item => (
-            <a key={item} href={`#${item.toLowerCase()}`} className="relative text-gray-400 hover:text-white transition-all duration-300 text-sm font-medium group py-1">
+            <a key={item} href={`#${item.toLowerCase()}`} style={{
+              color: '#9ca3af', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500,
+              transition: 'color 0.3s',
+            }} onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')} onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}>
               {item}
-              <span className="absolute bottom-0 left-0 w-0 h-px bg-gradient-to-r from-cyan-400 to-purple-500 group-hover:w-full transition-all duration-300" />
             </a>
           ))}
-          <a href="#kontakt" className="magnetic-btn px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-purple-600">
-            Projekt starten
-          </a>
+          <GradientBtn href="#kontakt">Projekt starten</GradientBtn>
         </div>
 
-        <button onClick={() => setOpen(!open)} className="md:hidden text-white p-2">
+        <button onClick={() => setOpen(!open)} className="md:hidden" style={{ color: '#fff', background: 'none', border: 'none', padding: '0.5rem', cursor: 'pointer' }}>
           {open ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
-      {/* Mobile menu */}
-      <div className={`md:hidden overflow-hidden transition-all duration-500 ${open ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="px-6 pb-6 pt-2 flex flex-col gap-4 glass-strong mx-4 rounded-2xl mt-2">
+      {open && (
+        <div className="md:hidden" style={{ padding: '0 1.5rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {['Leistungen', 'Pakete', 'Prozess', 'Kontakt'].map(item => (
-            <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setOpen(false)} className="text-gray-300 py-2 text-lg">{item}</a>
+            <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setOpen(false)}
+              style={{ color: '#d1d5db', textDecoration: 'none', padding: '0.5rem 0', fontSize: '1.125rem' }}>
+              {item}
+            </a>
           ))}
         </div>
-      </div>
+      )}
     </nav>
   )
 }
 
 // === HERO ===
 function Hero() {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      setMousePos({ x: (e.clientX / window.innerWidth - 0.5) * 30, y: (e.clientY / window.innerHeight - 0.5) * 30 })
-    }
-    window.addEventListener('mousemove', handler)
-    return () => window.removeEventListener('mousemove', handler)
-  }, [])
-
   return (
-    <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Animated blobs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-[100px] animate-blob" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-500/15 rounded-full blur-[100px] animate-blob-delay" />
-        <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[80px] animate-blob-delay2" />
-      </div>
+    <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '6rem 1.5rem 4rem' }}>
+      {/* Blobs */}
+      <div style={{ position: 'absolute', top: '15%', left: '15%', width: '500px', height: '500px', background: 'rgba(0,212,255,0.12)', borderRadius: '50%', filter: 'blur(100px)', animation: 'blob 12s ease-in-out infinite' }} />
+      <div style={{ position: 'absolute', bottom: '15%', right: '15%', width: '400px', height: '400px', background: 'rgba(123,47,247,0.12)', borderRadius: '50%', filter: 'blur(100px)', animation: 'blob 12s ease-in-out infinite 4s' }} />
 
-      {/* Grid pattern */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
-        style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }}
-      />
-
-      <div className="relative z-10 text-center px-6 max-w-6xl mx-auto">
+      <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: '60rem', margin: '0 auto' }}>
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass mb-10 animate-float"
-          style={{ animation: 'slide-up 0.8s cubic-bezier(0.16,1,0.3,1) both, float 6s ease-in-out infinite 0.8s' }}>
-          <Sparkles size={14} className="text-cyan-400" />
-          <span className="text-sm text-gray-300 font-medium">Websites die begeistern</span>
-        </div>
+        <Reveal>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+            padding: '0.625rem 1.25rem', borderRadius: '9999px',
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+            marginBottom: '2.5rem', animation: 'float 6s ease-in-out infinite',
+          }}>
+            <Sparkles size={14} style={{ color: '#00d4ff' }} />
+            <span style={{ fontSize: '0.875rem', color: '#d1d5db', fontWeight: 500 }}>Websites die begeistern</span>
+          </div>
+        </Reveal>
 
-        {/* Logo / Title */}
-        <div style={{ transform: `translate(${mousePos.x * 0.3}px, ${mousePos.y * 0.3}px)`, transition: 'transform 0.3s ease-out', animation: 'scale-in 1s cubic-bezier(0.16,1,0.3,1) 0.2s both' }}>
-          <h1 className="mb-6 text-glow">
+        {/* Logo */}
+        <Reveal delay={200}>
+          <h1 style={{ marginBottom: '1.5rem', textShadow: '0 0 60px rgba(0,212,255,0.2), 0 0 120px rgba(123,47,247,0.1)' }}>
             <Logo size="hero" />
           </h1>
-        </div>
+        </Reveal>
 
-        {/* Subtitle with shimmer */}
-        <p className="text-xl md:text-3xl text-gray-400 mb-4 max-w-3xl mx-auto leading-relaxed font-light"
-          style={{ animation: 'slide-up 0.8s cubic-bezier(0.16,1,0.3,1) 0.4s both' }}>
-          Moderne Websites, die dein Business{' '}
-          <span className="text-white font-semibold relative">
-            auf das nächste Level
-            <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 to-purple-500 animate-pulse-glow" />
-          </span>{' '}
-          bringen.
-        </p>
+        <Reveal delay={400}>
+          <p style={{ fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', color: '#9ca3af', marginBottom: '1rem', maxWidth: '48rem', margin: '0 auto 1rem', lineHeight: 1.6, fontWeight: 300 }}>
+            Moderne Websites, die dein Business{' '}
+            <span style={{ color: '#fff', fontWeight: 600 }}>auf das nächste Level</span>{' '}bringen.
+          </p>
+        </Reveal>
 
-        <p className="text-gray-500 mb-12 text-lg font-light tracking-wide"
-          style={{ animation: 'slide-up 0.8s cubic-bezier(0.16,1,0.3,1) 0.6s both' }}>
-          Schnell · Bezahlbar · Professionell
-        </p>
+        <Reveal delay={600}>
+          <p style={{ color: '#6b7280', marginBottom: '3rem', fontSize: '1.125rem', fontWeight: 300, letterSpacing: '0.15em' }}>
+            Schnell · Bezahlbar · Professionell
+          </p>
+        </Reveal>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-5 justify-center" style={{ animation: 'slide-up 0.8s cubic-bezier(0.16,1,0.3,1) 0.8s both' }}>
-          <a href="#kontakt" className="magnetic-btn group px-10 py-5 rounded-2xl font-semibold text-white bg-gradient-to-r from-cyan-500 to-purple-600 text-lg flex items-center justify-center gap-3">
-            Projekt starten
-            <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
-          </a>
-          <a href="#pakete" className="group px-10 py-5 rounded-2xl font-semibold text-gray-300 glass hover:bg-white/[0.08] transition-all duration-300 text-lg flex items-center justify-center gap-3">
-            Pakete ansehen
-            <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
-          </a>
-        </div>
+        <Reveal delay={800}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }} className="sm:flex-row sm:justify-center">
+            <GradientBtn href="#kontakt" large>
+              Projekt starten <ArrowRight size={20} />
+            </GradientBtn>
+            <a href="#pakete" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
+              padding: '1.25rem 2.5rem', borderRadius: '1rem', fontWeight: 600,
+              color: '#d1d5db', fontSize: '1.125rem', textDecoration: 'none',
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+              transition: 'all 0.3s ease',
+            }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+            >
+              Pakete ansehen <ChevronRight size={20} />
+            </a>
+          </div>
+        </Reveal>
 
         {/* Scroll indicator */}
-        <div className="mt-20 animate-bounce" style={{ animation: 'slide-up 0.8s cubic-bezier(0.16,1,0.3,1) 1.2s both, bounce 2s infinite 2s' }}>
-          <div className="w-6 h-10 rounded-full border-2 border-white/20 mx-auto flex justify-center pt-2">
-            <div className="w-1 h-2.5 rounded-full bg-white/40 animate-pulse" />
+        <Reveal delay={1200}>
+          <div style={{ marginTop: '5rem' }}>
+            <div style={{ width: '1.5rem', height: '2.5rem', borderRadius: '9999px', border: '2px solid rgba(255,255,255,0.2)', margin: '0 auto', display: 'flex', justifyContent: 'center', paddingTop: '0.5rem' }}>
+              <div style={{ width: '3px', height: '8px', borderRadius: '9999px', background: 'rgba(255,255,255,0.4)', animation: 'pulse 2s ease-in-out infinite' }} />
+            </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   )
 }
 
+// === SECTION HEADER ===
+function SectionHeader({ label, labelColor, title, highlight, desc }: { label: string; labelColor: string; title: string; highlight: string; desc: string }) {
+  return (
+    <Reveal>
+      <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
+        <p style={{ color: labelColor, fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '1rem' }}>{label}</p>
+        <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 700, marginBottom: '1.5rem', fontFamily: 'Poppins, sans-serif' }}>
+          {title}{' '}
+          <span style={{ background: 'linear-gradient(135deg, #00d4ff, #7b2ff7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{highlight}</span>
+        </h2>
+        <p style={{ color: '#9ca3af', fontSize: '1.125rem', maxWidth: '36rem', margin: '0 auto' }}>{desc}</p>
+      </div>
+    </Reveal>
+  )
+}
+
 // === SERVICES ===
 function Services() {
-  const ref = useReveal()
   const services = [
-    { icon: Globe, title: 'Websites', desc: 'Landingpages, Unternehmensseiten, Portfolios — modern und blitzschnell.', gradient: 'from-cyan-400 to-blue-500' },
-    { icon: ShoppingBag, title: 'Online Shops', desc: 'Verkaufe deine Produkte online. Von einfach bis komplex.', gradient: 'from-purple-400 to-pink-500' },
-    { icon: Smartphone, title: 'Web Apps', desc: 'Interaktive Anwendungen die auf jedem Gerät perfekt laufen.', gradient: 'from-orange-400 to-red-500' },
-    { icon: Code, title: 'Wartung & Support', desc: 'Updates, Hosting, Änderungen — wir kümmern uns um alles.', gradient: 'from-green-400 to-emerald-500' },
+    { icon: Globe, title: 'Websites', desc: 'Landingpages, Unternehmensseiten, Portfolios — modern und blitzschnell.', gradient: 'linear-gradient(135deg, #00d4ff, #0077b6)' },
+    { icon: ShoppingBag, title: 'Online Shops', desc: 'Verkaufe deine Produkte online. Von einfach bis komplex.', gradient: 'linear-gradient(135deg, #7b2ff7, #c471f5)' },
+    { icon: Smartphone, title: 'Web Apps', desc: 'Interaktive Anwendungen die auf jedem Gerät perfekt laufen.', gradient: 'linear-gradient(135deg, #f97316, #ef4444)' },
+    { icon: Code, title: 'Wartung & Support', desc: 'Updates, Hosting, Änderungen — wir kümmern uns um alles.', gradient: 'linear-gradient(135deg, #22c55e, #10b981)' },
   ]
 
   return (
-    <section id="leistungen" className="py-32 px-6 relative">
-      <div className="max-w-7xl mx-auto">
-        <div ref={ref} className="reveal text-center mb-20">
-          <p className="text-cyan-400 text-sm font-semibold tracking-widest uppercase mb-4">Leistungen</p>
-          <h2 className="text-4xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            Was wir{' '}
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">machen</span>
-          </h2>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto">Alles aus einer Hand — von der Idee bis zum fertigen Produkt.</p>
-        </div>
+    <section id="leistungen" style={{ padding: '8rem 1.5rem' }}>
+      <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+        <SectionHeader label="Leistungen" labelColor="#00d4ff" title="Was wir" highlight="machen" desc="Alles aus einer Hand — von der Idee bis zum fertigen Produkt." />
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map((s, i) => {
-            const cardRef = useReveal()
-            return (
-              <div key={i} ref={cardRef} className="reveal glass-card rounded-2xl p-8 group" style={{ transitionDelay: `${i * 100}ms` }}>
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg`}>
-                  <s.icon size={28} className="text-white" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+          {services.map((s, i) => (
+            <Reveal key={i} delay={i * 100}>
+              <GlassCard>
+                <div style={{
+                  width: '3.5rem', height: '3.5rem', borderRadius: '1rem',
+                  background: s.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginBottom: '1.5rem', transition: 'transform 0.5s ease',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                }}>
+                  <s.icon size={24} color="#fff" />
                 </div>
-                <h3 className="text-xl font-bold mb-3 group-hover:text-cyan-300 transition-colors duration-300">{s.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{s.desc}</p>
-                <div className="mt-6 flex items-center gap-2 text-sm text-cyan-400 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                  Mehr erfahren <ArrowRight size={14} />
-                </div>
-              </div>
-            )
-          })}
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.75rem' }}>{s.title}</h3>
+                <p style={{ color: '#9ca3af', fontSize: '0.875rem', lineHeight: 1.7 }}>{s.desc}</p>
+              </GlassCard>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
@@ -217,108 +298,93 @@ function Services() {
 
 // === PACKAGES ===
 function Packages() {
-  const ref = useReveal()
-
   const packages = [
     {
-      name: 'Starter',
-      price: '499',
-      desc: 'Perfekt für den Einstieg',
+      name: 'Starter', price: '499', desc: 'Perfekt für den Einstieg', icon: MousePointer2, highlight: false,
       features: ['Landingpage (1 Seite)', 'Responsive Design', 'Kontaktformular', 'SEO Grundlagen', 'SSL Zertifikat', '1 Korrekturschleife'],
-      highlight: false,
-      icon: MousePointer2,
     },
     {
-      name: 'Business',
-      price: '1.299',
-      desc: 'Für wachsende Unternehmen',
+      name: 'Business', price: '1.299', desc: 'Für wachsende Unternehmen', icon: Layers, highlight: true,
       features: ['Bis zu 7 Seiten', 'Responsive Design', 'Kontaktformular', 'SEO Optimierung', 'Google Analytics', 'CMS System', '3 Korrekturschleifen', 'Social Media Integration'],
-      highlight: true,
-      icon: Layers,
     },
     {
-      name: 'Premium',
-      price: '2.999',
-      desc: 'Maximale Performance',
+      name: 'Premium', price: '2.999', desc: 'Maximale Performance', icon: Sparkles, highlight: false,
       features: ['Bis zu 15 Seiten', 'Individuelles Design', 'Online Shop möglich', 'SEO + Performance', 'CMS System', 'Animations & Effekte', 'Unbegrenzte Korrekturen', 'Priority Support 12 Monate'],
-      highlight: false,
-      icon: Sparkles,
     },
   ]
 
   return (
-    <section id="pakete" className="py-32 px-6 relative">
-      {/* Background accent */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-r from-cyan-500/5 to-purple-500/5 rounded-full blur-[120px]" />
-      </div>
+    <section id="pakete" style={{ padding: '8rem 1.5rem', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '800px', height: '400px', background: 'radial-gradient(ellipse, rgba(0,212,255,0.06), transparent)', filter: 'blur(60px)', pointerEvents: 'none' }} />
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div ref={ref} className="reveal text-center mb-20">
-          <p className="text-purple-400 text-sm font-semibold tracking-widest uppercase mb-4">Pakete</p>
-          <h2 className="text-4xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            Transparent.{' '}
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">Fair.</span>
-          </h2>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto">Keine versteckten Kosten. Keine bösen Überraschungen.</p>
-        </div>
+      <div style={{ maxWidth: '80rem', margin: '0 auto', position: 'relative', zIndex: 10 }}>
+        <SectionHeader label="Pakete" labelColor="#7b2ff7" title="Transparent." highlight="Fair." desc="Keine versteckten Kosten. Keine bösen Überraschungen." />
 
-        <div className="grid md:grid-cols-3 gap-8 items-start">
-          {packages.map((pkg, i) => {
-            const cardRef = useReveal()
-            return (
-              <div key={i} ref={cardRef} className="reveal" style={{ transitionDelay: `${i * 150}ms` }}>
-                <div className={`relative rounded-3xl p-8 transition-all duration-500 ${
-                  pkg.highlight
-                    ? 'glass-strong scale-105 glow-cyan'
-                    : 'glass-card'
-                }`}>
-                  {pkg.highlight && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 text-xs font-bold tracking-wider animate-pulse-glow">
-                      ✨ BELIEBT
-                    </div>
-                  )}
-
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 ${pkg.highlight ? 'bg-gradient-to-br from-cyan-500 to-purple-600' : 'bg-white/5'}`}>
-                    <pkg.icon size={22} className={pkg.highlight ? 'text-white' : 'text-gray-400'} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', alignItems: 'start' }}>
+          {packages.map((pkg, i) => (
+            <Reveal key={i} delay={i * 150}>
+              <div style={{ position: 'relative' }}>
+                {pkg.highlight && (
+                  <div style={{
+                    position: 'absolute', top: '-1rem', left: '50%', transform: 'translateX(-50%)',
+                    padding: '0.375rem 1.25rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 700,
+                    background: 'linear-gradient(135deg, #00d4ff, #7b2ff7)', color: '#fff', letterSpacing: '0.05em', zIndex: 10,
+                  }}>
+                    ✨ BELIEBT
+                  </div>
+                )}
+                <GlassCard glow={pkg.highlight} hover={!pkg.highlight} className={pkg.highlight ? '' : ''}>
+                  <div style={{
+                    width: '3rem', height: '3rem', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    marginBottom: '1.5rem',
+                    background: pkg.highlight ? 'linear-gradient(135deg, #00d4ff, #7b2ff7)' : 'rgba(255,255,255,0.05)',
+                  }}>
+                    <pkg.icon size={20} color={pkg.highlight ? '#fff' : '#9ca3af'} />
                   </div>
 
-                  <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>{pkg.name}</h3>
-                  <p className="text-gray-400 text-sm mb-8">{pkg.desc}</p>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', fontFamily: 'Poppins, sans-serif' }}>{pkg.name}</h3>
+                  <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginBottom: '2rem' }}>{pkg.desc}</p>
 
-                  <div className="mb-8">
-                    <span className="text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">€{pkg.price}</span>
-                    <span className="text-gray-500 text-sm ml-2">einmalig</span>
+                  <div style={{ marginBottom: '2rem' }}>
+                    <span style={{ fontSize: '3rem', fontWeight: 700 }}>€{pkg.price}</span>
+                    <span style={{ color: '#6b7280', fontSize: '0.875rem', marginLeft: '0.5rem' }}>einmalig</span>
                   </div>
 
-                  <ul className="space-y-3.5 mb-10">
+                  <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
                     {pkg.features.map((f, j) => (
-                      <li key={j} className="flex items-start gap-3 text-sm text-gray-300">
-                        <Check size={16} className="text-cyan-400 mt-0.5 flex-shrink-0" />
+                      <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', fontSize: '0.875rem', color: '#d1d5db' }}>
+                        <Check size={16} color="#00d4ff" style={{ marginTop: '2px', flexShrink: 0 }} />
                         {f}
                       </li>
                     ))}
                   </ul>
 
-                  <a href="#kontakt" className={`magnetic-btn block text-center py-4 rounded-2xl font-semibold transition-all ${
-                    pkg.highlight
-                      ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white'
-                      : 'glass text-gray-300 hover:text-white'
-                  }`}>
-                    Jetzt starten
-                  </a>
-                </div>
+                  {pkg.highlight ? (
+                    <GradientBtn href="#kontakt" className="w-full" large>Jetzt starten</GradientBtn>
+                  ) : (
+                    <a href="#kontakt" style={{
+                      display: 'block', textAlign: 'center', padding: '1rem', borderRadius: '1rem',
+                      fontWeight: 600, color: '#d1d5db', border: '1px solid rgba(255,255,255,0.1)',
+                      textDecoration: 'none', transition: 'all 0.3s ease',
+                    }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#fff' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#d1d5db' }}
+                    >
+                      Jetzt starten
+                    </a>
+                  )}
+                </GlassCard>
               </div>
-            )
-          })}
+            </Reveal>
+          ))}
         </div>
 
-        <p className="text-center text-gray-500 mt-16 text-sm">
-          Individuelle Anforderungen?{' '}
-          <a href="#kontakt" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 decoration-cyan-400/30 hover:decoration-cyan-400 transition-all">
-            Schreib uns
-          </a>
-        </p>
+        <Reveal delay={500}>
+          <p style={{ textAlign: 'center', color: '#6b7280', marginTop: '4rem', fontSize: '0.875rem' }}>
+            Individuelle Anforderungen?{' '}
+            <a href="#kontakt" style={{ color: '#00d4ff', textDecoration: 'underline', textUnderlineOffset: '4px' }}>Schreib uns</a>
+          </p>
+        </Reveal>
       </div>
     </section>
   )
@@ -326,45 +392,37 @@ function Packages() {
 
 // === PROCESS ===
 function Process() {
-  const ref = useReveal()
   const steps = [
-    { num: '01', title: 'Gespräch', desc: 'Wir lernen dich und dein Business kennen. Was brauchst du?' },
-    { num: '02', title: 'Konzept', desc: 'Wir erstellen Design-Entwürfe. Du gibst Feedback.' },
-    { num: '03', title: 'Umsetzung', desc: 'Wir bauen deine Website. Modern, schnell, responsive.' },
-    { num: '04', title: 'Launch', desc: 'Deine Website geht live. Wir kümmern uns um alles.' },
+    { num: '01', title: 'Gespräch', desc: 'Wir lernen dich und dein Business kennen.' },
+    { num: '02', title: 'Konzept', desc: 'Design-Entwürfe und dein Feedback.' },
+    { num: '03', title: 'Umsetzung', desc: 'Wir bauen deine Website. Modern & schnell.' },
+    { num: '04', title: 'Launch', desc: 'Go live! Wir kümmern uns um alles.' },
   ]
 
   return (
-    <section id="prozess" className="py-32 px-6 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div ref={ref} className="reveal text-center mb-20">
-          <p className="text-orange-400 text-sm font-semibold tracking-widest uppercase mb-4">Prozess</p>
-          <h2 className="text-4xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            In 4 Schritten{' '}
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">online</span>
-          </h2>
-        </div>
+    <section id="prozess" style={{ padding: '8rem 1.5rem' }}>
+      <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+        <SectionHeader label="Prozess" labelColor="#f97316" title="In 4 Schritten" highlight="online" desc="Von der Idee zur fertigen Website." />
 
-        <div className="grid md:grid-cols-4 gap-8 relative">
-          {/* Connecting line */}
-          <div className="hidden md:block absolute top-12 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-cyan-500/20" />
-
-          {steps.map((step, i) => {
-            const stepRef = useReveal()
-            return (
-              <div key={i} ref={stepRef} className="reveal text-center group" style={{ transitionDelay: `${i * 150}ms` }}>
-                <div className="relative inline-flex mb-6">
-                  <div className="w-24 h-24 rounded-3xl glass-card flex items-center justify-center group-hover:glow-cyan transition-all duration-500">
-                    <span className="text-3xl font-black bg-gradient-to-br from-cyan-400 to-purple-500 bg-clip-text text-transparent" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                      {step.num}
-                    </span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
+          {steps.map((step, i) => (
+            <Reveal key={i} delay={i * 150}>
+              <div style={{ textAlign: 'center' }}>
+                <GlassCard hover>
+                  <div style={{
+                    fontSize: '2.5rem', fontWeight: 900, fontFamily: 'Poppins, sans-serif',
+                    background: 'linear-gradient(135deg, #00d4ff, #7b2ff7)',
+                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                    marginBottom: '1rem',
+                  }}>
+                    {step.num}
                   </div>
-                </div>
-                <h3 className="text-xl font-bold mb-3 group-hover:text-cyan-300 transition-colors">{step.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{step.desc}</p>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.75rem' }}>{step.title}</h3>
+                  <p style={{ color: '#9ca3af', fontSize: '0.875rem', lineHeight: 1.7 }}>{step.desc}</p>
+                </GlassCard>
               </div>
-            )
-          })}
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
@@ -373,43 +431,35 @@ function Process() {
 
 // === TESTIMONIALS ===
 function Testimonials() {
-  const ref = useReveal()
   const reviews = [
     { name: 'Laura M.', role: 'Yoga Studio', text: 'Endlich eine Website auf die ich stolz bin! Super schnell und unkompliziert.', avatar: '👩‍🦰' },
     { name: 'Markus B.', role: 'IT-Service', text: 'Professionell, modern und das zu einem fairen Preis. Klare Empfehlung!', avatar: '👨‍💼' },
-    { name: 'Sarah K.', role: 'Freelancerin', text: 'Mein Portfolio sieht jetzt richtig premium aus. Die Zusammenarbeit war mega smooth.', avatar: '👩‍🎨' },
+    { name: 'Sarah K.', role: 'Freelancerin', text: 'Mein Portfolio sieht jetzt richtig premium aus. Zusammenarbeit war mega smooth.', avatar: '👩‍🎨' },
   ]
 
   return (
-    <section className="py-32 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div ref={ref} className="reveal text-center mb-20">
-          <p className="text-yellow-400 text-sm font-semibold tracking-widest uppercase mb-4">Kundenstimmen</p>
-          <h2 className="text-4xl md:text-6xl font-bold" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            Das sagen unsere{' '}
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">Kunden</span>
-          </h2>
-        </div>
+    <section style={{ padding: '8rem 1.5rem' }}>
+      <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+        <SectionHeader label="Kundenstimmen" labelColor="#eab308" title="Das sagen unsere" highlight="Kunden" desc="" />
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {reviews.map((t, i) => {
-            const cardRef = useReveal()
-            return (
-              <div key={i} ref={cardRef} className="reveal glass-card rounded-2xl p-8" style={{ transitionDelay: `${i * 100}ms` }}>
-                <div className="flex gap-1 mb-6">
-                  {Array(5).fill(0).map((_, j) => <Star key={j} size={16} className="text-yellow-400 fill-yellow-400" />)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
+          {reviews.map((t, i) => (
+            <Reveal key={i} delay={i * 100}>
+              <GlassCard>
+                <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '1.5rem' }}>
+                  {Array(5).fill(0).map((_, j) => <Star key={j} size={16} color="#eab308" fill="#eab308" />)}
                 </div>
-                <p className="text-gray-300 text-sm mb-8 leading-relaxed italic">"{t.text}"</p>
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{t.avatar}</span>
+                <p style={{ color: '#d1d5db', fontSize: '0.875rem', marginBottom: '2rem', lineHeight: 1.8, fontStyle: 'italic' }}>"{t.text}"</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span style={{ fontSize: '1.5rem' }}>{t.avatar}</span>
                   <div>
-                    <p className="font-semibold text-sm">{t.name}</p>
-                    <p className="text-gray-500 text-xs">{t.role}</p>
+                    <p style={{ fontWeight: 600, fontSize: '0.875rem' }}>{t.name}</p>
+                    <p style={{ color: '#6b7280', fontSize: '0.75rem' }}>{t.role}</p>
                   </div>
                 </div>
-              </div>
-            )
-          })}
+              </GlassCard>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
@@ -418,71 +468,86 @@ function Testimonials() {
 
 // === CTA BANNER ===
 function CtaBanner() {
-  const ref = useReveal()
   return (
-    <section className="py-20 px-6">
-      <div ref={ref} className="reveal max-w-5xl mx-auto">
-        <div className="gradient-border rounded-3xl p-12 md:p-16 text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5" />
-          <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] animate-blob" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] animate-blob-delay" />
-          
-          <div className="relative z-10">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-glow" style={{ fontFamily: 'Poppins, sans-serif' }}>
-              Bereit für deine neue Website?
-            </h2>
-            <p className="text-gray-400 text-lg mb-10 max-w-lg mx-auto">
-              Lass uns gemeinsam etwas Großartiges bauen.
-            </p>
-            <a href="#kontakt" className="magnetic-btn inline-flex items-center gap-3 px-10 py-5 rounded-2xl font-semibold text-white bg-gradient-to-r from-cyan-500 to-purple-600 text-lg">
-              Kostenloses Erstgespräch
-              <ArrowRight size={20} />
-            </a>
+    <section style={{ padding: '5rem 1.5rem' }}>
+      <Reveal>
+        <div style={{ maxWidth: '60rem', margin: '0 auto' }}>
+          <div style={{
+            borderRadius: '2rem', padding: 'clamp(3rem, 5vw, 5rem)', textAlign: 'center', position: 'relative', overflow: 'hidden',
+            background: 'linear-gradient(135deg, rgba(0,212,255,0.08), rgba(123,47,247,0.08))',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}>
+            <div style={{ position: 'absolute', top: 0, right: 0, width: '300px', height: '300px', background: 'rgba(0,212,255,0.1)', borderRadius: '50%', filter: 'blur(80px)', animation: 'blob 12s ease-in-out infinite' }} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, width: '300px', height: '300px', background: 'rgba(123,47,247,0.1)', borderRadius: '50%', filter: 'blur(80px)', animation: 'blob 12s ease-in-out infinite 4s' }} />
+
+            <div style={{ position: 'relative', zIndex: 10 }}>
+              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 3rem)', fontWeight: 700, marginBottom: '1.5rem', fontFamily: 'Poppins, sans-serif', textShadow: '0 0 40px rgba(0,212,255,0.2)' }}>
+                Bereit für deine neue Website?
+              </h2>
+              <p style={{ color: '#9ca3af', fontSize: '1.125rem', marginBottom: '2.5rem', maxWidth: '32rem', margin: '0 auto 2.5rem' }}>
+                Lass uns gemeinsam etwas Großartiges bauen.
+              </p>
+              <GradientBtn href="#kontakt" large>
+                Kostenloses Erstgespräch <ArrowRight size={20} />
+              </GradientBtn>
+            </div>
           </div>
         </div>
-      </div>
+      </Reveal>
     </section>
   )
 }
 
 // === CONTACT ===
 function Contact() {
-  const ref = useReveal()
-  return (
-    <section id="kontakt" className="py-32 px-6">
-      <div className="max-w-4xl mx-auto">
-        <div ref={ref} className="reveal text-center mb-16">
-          <p className="text-cyan-400 text-sm font-semibold tracking-widest uppercase mb-4">Kontakt</p>
-          <h2 className="text-4xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            Lass uns{' '}
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">starten</span>
-          </h2>
-          <p className="text-gray-400 text-lg">Schreib uns — wir melden uns innerhalb von 24 Stunden.</p>
-        </div>
+  const inputStyle = {
+    width: '100%', padding: '1rem 1.5rem', borderRadius: '1rem', fontSize: '1rem',
+    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+    color: '#fff', outline: 'none', transition: 'border-color 0.3s ease',
+    fontFamily: 'Inter, sans-serif',
+  }
 
-        <div className="glass-strong rounded-3xl p-8 md:p-12">
-          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); alert('Nachricht gesendet! Wir melden uns bei dir.') }}>
-            <div className="grid md:grid-cols-2 gap-6">
-              <input type="text" placeholder="Dein Name" required
-                className="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.08] transition-all duration-300" />
-              <input type="email" placeholder="Deine E-Mail" required
-                className="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.08] transition-all duration-300" />
-            </div>
-            <select className="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400 focus:outline-none focus:border-cyan-500/50 transition-all duration-300 appearance-none">
-              <option value="">Welches Paket interessiert dich?</option>
-              <option value="starter">Starter — €499</option>
-              <option value="business">Business — €1.299</option>
-              <option value="premium">Premium — €2.999</option>
-              <option value="custom">Individuell</option>
-            </select>
-            <textarea placeholder="Erzähl uns von deinem Projekt..." rows={5} required
-              className="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.08] transition-all duration-300 resize-none" />
-            <button type="submit"
-              className="magnetic-btn w-full py-5 rounded-2xl font-semibold text-white bg-gradient-to-r from-cyan-500 to-purple-600 text-lg">
-              Nachricht senden ✨
-            </button>
-          </form>
-        </div>
+  return (
+    <section id="kontakt" style={{ padding: '8rem 1.5rem' }}>
+      <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
+        <SectionHeader label="Kontakt" labelColor="#00d4ff" title="Lass uns" highlight="starten" desc="Schreib uns — wir melden uns innerhalb von 24 Stunden." />
+
+        <Reveal delay={200}>
+          <GlassCard hover={false}>
+            <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} onSubmit={(e) => { e.preventDefault(); alert('Nachricht gesendet! Wir melden uns bei dir.') }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                <input type="text" placeholder="Dein Name" required style={inputStyle}
+                  onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.5)'}
+                  onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'} />
+                <input type="email" placeholder="Deine E-Mail" required style={inputStyle}
+                  onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.5)'}
+                  onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'} />
+              </div>
+              <select style={{ ...inputStyle, color: '#6b7280', appearance: 'none' as const }}>
+                <option value="">Welches Paket interessiert dich?</option>
+                <option value="starter">Starter — €499</option>
+                <option value="business">Business — €1.299</option>
+                <option value="premium">Premium — €2.999</option>
+                <option value="custom">Individuell</option>
+              </select>
+              <textarea placeholder="Erzähl uns von deinem Projekt..." rows={5} required
+                style={{ ...inputStyle, resize: 'none' as const }}
+                onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.5)'}
+                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'} />
+              <button type="submit" style={{
+                width: '100%', padding: '1.25rem', borderRadius: '1rem', fontWeight: 600,
+                fontSize: '1.125rem', color: '#fff', border: 'none', cursor: 'pointer',
+                background: 'linear-gradient(135deg, #00b4d8, #7b2ff7)',
+                transition: 'all 0.4s ease',
+              }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,212,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = '' }}
+              >
+                Nachricht senden ✨
+              </button>
+            </form>
+          </GlassCard>
+        </Reveal>
       </div>
     </section>
   )
@@ -491,22 +556,31 @@ function Contact() {
 // === FOOTER ===
 function Footer() {
   return (
-    <footer className="border-t border-white/5 py-12 px-6">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+    <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '3rem 1.5rem' }}>
+      <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
         <Logo />
-        <div className="flex items-center gap-8 text-sm text-gray-500">
-          <a href="#" className="hover:text-white transition-colors duration-300">Impressum</a>
-          <a href="#" className="hover:text-white transition-colors duration-300">Datenschutz</a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', fontSize: '0.875rem' }}>
+          <a href="#" style={{ color: '#6b7280', textDecoration: 'none', transition: 'color 0.3s' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}>Impressum</a>
+          <a href="#" style={{ color: '#6b7280', textDecoration: 'none', transition: 'color 0.3s' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}>Datenschutz</a>
         </div>
-        <div className="flex items-center gap-5">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {[Instagram, Linkedin, Mail].map((Icon, i) => (
-            <a key={i} href="#" className="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-300">
-              <Icon size={18} />
+            <a key={i} href="#" style={{
+              width: '2.5rem', height: '2.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#9ca3af', textDecoration: 'none',
+              transition: 'all 0.3s ease',
+            }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+            >
+              <Icon size={16} />
             </a>
           ))}
         </div>
       </div>
-      <div className="text-center text-gray-600 text-xs mt-8">
+      <div style={{ textAlign: 'center', color: '#4b5563', fontSize: '0.75rem', marginTop: '2rem' }}>
         © {new Date().getFullYear()} Weblity. Alle Rechte vorbehalten.
       </div>
     </footer>
@@ -516,7 +590,20 @@ function Footer() {
 // === APP ===
 function App() {
   return (
-    <div className="noise">
+    <>
+      <style>{`
+        @keyframes blob { 0%,100%{transform:translate(0,0) scale(1)} 25%{transform:translate(30px,-50px) scale(1.1)} 50%{transform:translate(-20px,20px) scale(0.9)} 75%{transform:translate(20px,40px) scale(1.05)} }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+        .hidden { display: none !important; }
+        @media (min-width: 768px) { .md\\:flex { display: flex !important; } }
+        @media (min-width: 640px) { .sm\\:flex-row { flex-direction: row !important; } .sm\\:justify-center { justify-content: center !important; } }
+        .w-full { width: 100%; }
+        ::selection { background: rgba(0,212,255,0.3); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0f1c; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
+      `}</style>
       <Navbar />
       <Hero />
       <Services />
@@ -526,7 +613,7 @@ function App() {
       <CtaBanner />
       <Contact />
       <Footer />
-    </div>
+    </>
   )
 }
 
