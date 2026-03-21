@@ -1,30 +1,71 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react'
-import { Menu, X, ArrowRight, Check, Star, Zap, Globe, Smartphone, ShoppingBag, Code, ChevronRight, Mail, Instagram, Linkedin, MousePointer2, Sparkles, Layers } from 'lucide-react'
+import { useState, useEffect, useRef, type ReactNode, type CSSProperties } from 'react'
+import { Menu, X, ArrowRight, Check, Star, Globe, Smartphone, ShoppingBag, Code, Mail, Instagram, Linkedin, Sparkles, Play } from 'lucide-react'
 
-// === ANIMATE ON SCROLL ===
-function Reveal({ children, delay = 0, className = '' }: { children: ReactNode; delay?: number; className?: string }) {
+// ============================================================================
+// HOOKS
+// ============================================================================
+
+function useScrollProgress() {
+  const [progress, setProgress] = useState(0)
+  useEffect(() => {
+    const handler = () => {
+      const scrollTop = window.scrollY
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight
+      setProgress(docHeight > 0 ? scrollTop / docHeight : 0)
+    }
+    window.addEventListener('scroll', handler, { passive: true })
+    return () => window.removeEventListener('scroll', handler)
+  }, [])
+  return progress
+}
+
+function useInView(threshold = 0.2) {
   const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
+  const [inView, setInView] = useState(false)
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.unobserve(el) } },
-      { threshold: 0.1 }
-    )
+    const obs = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold })
     obs.observe(el)
     return () => obs.disconnect()
-  }, [])
+  }, [threshold])
+  return { ref, inView }
+}
 
+function useParallax(speed = 0.5) {
+  const [offset, setOffset] = useState(0)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const handler = () => {
+      const el = ref.current
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const center = rect.top + rect.height / 2
+      const viewCenter = window.innerHeight / 2
+      setOffset((center - viewCenter) * speed * -0.1)
+    }
+    window.addEventListener('scroll', handler, { passive: true })
+    handler()
+    return () => window.removeEventListener('scroll', handler)
+  }, [speed])
+  return { ref, offset }
+}
+
+// ============================================================================
+// COMPONENTS
+// ============================================================================
+
+const FadeIn = ({ children, delay = 0, y = 60, className = '', style = {} }: { children: ReactNode; delay?: number; y?: number; className?: string; style?: CSSProperties }) => {
+  const { ref, inView } = useInView(0.15)
   return (
     <div
       ref={ref}
       className={className}
       style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(40px)',
-        transition: `all 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
+        opacity: inView ? 1 : 0,
+        transform: inView ? 'translateY(0)' : `translateY(${y}px)`,
+        transition: `opacity 1s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 1s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`,
+        ...style,
       }}
     >
       {children}
@@ -32,81 +73,50 @@ function Reveal({ children, delay = 0, className = '' }: { children: ReactNode; 
   )
 }
 
-// === LOGO ===
-function Logo({ size = 'default' }: { size?: 'default' | 'hero' }) {
-  const s = size === 'hero' ? 'text-7xl md:text-9xl' : 'text-2xl'
+const Logo = ({ size = 'sm' }: { size?: 'sm' | 'lg' | 'xl' }) => {
+  const sizes = { sm: '1.75rem', lg: '4rem', xl: 'clamp(4rem, 12vw, 9rem)' }
   return (
-    <span className={`font-extrabold ${s} tracking-tight`} style={{ fontFamily: 'Poppins, sans-serif' }}>
-      <span className="text-white">web</span>
-      <span style={{ background: 'linear-gradient(135deg, #00d4ff, #7b2ff7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>lity</span>
+    <span style={{ fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif', fontWeight: 700, fontSize: sizes[size], letterSpacing: '-0.03em' }}>
+      <span style={{ color: '#fff' }}>web</span>
+      <span style={{ background: 'linear-gradient(135deg, #2997ff, #af52de)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>lity</span>
     </span>
   )
 }
 
-// === GLASS CARD ===
-function GlassCard({ children, hover = true, glow = false, className = '' }: { children: ReactNode; hover?: boolean; glow?: boolean; className?: string }) {
-  return (
-    <div
-      className={className}
-      style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: '1.5rem',
-        padding: '2rem',
-        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-        ...(glow ? { boxShadow: '0 0 40px rgba(0,212,255,0.12), 0 0 80px rgba(123,47,247,0.06)' } : {}),
-      }}
-      onMouseEnter={hover ? (e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.transform = 'translateY(-8px) scale(1.02)'
-        el.style.borderColor = 'rgba(255,255,255,0.16)'
-        el.style.boxShadow = '0 30px 60px -12px rgba(0,212,255,0.15), 0 0 40px rgba(123,47,247,0.08)'
-      } : undefined}
-      onMouseLeave={hover ? (e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.transform = ''
-        el.style.borderColor = 'rgba(255,255,255,0.08)'
-        el.style.boxShadow = glow ? '0 0 40px rgba(0,212,255,0.12)' : 'none'
-      } : undefined}
-    >
-      {children}
-    </div>
-  )
-}
-
-// === GRADIENT BUTTON ===
-function GradientBtn({ children, href, large = false, className = '' }: { children: ReactNode; href: string; large?: boolean; className?: string }) {
+const GlowButton = ({ children, href, variant = 'primary', size = 'md' }: { children: ReactNode; href: string; variant?: 'primary' | 'secondary'; size?: 'md' | 'lg' }) => {
+  const [hover, setHover] = useState(false)
+  const isPrimary = variant === 'primary'
+  const isLg = size === 'lg'
+  
   return (
     <a
       href={href}
-      className={className}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '0.75rem',
-        padding: large ? '1.25rem 2.5rem' : '0.75rem 1.75rem',
-        borderRadius: '1rem',
-        fontWeight: 600,
-        fontSize: large ? '1.125rem' : '0.875rem',
-        color: '#fff',
-        background: 'linear-gradient(135deg, #00b4d8, #7b2ff7)',
+        gap: '0.5rem',
+        padding: isLg ? '1.125rem 2.25rem' : '0.875rem 1.75rem',
+        borderRadius: '980px',
+        fontSize: isLg ? '1.125rem' : '1rem',
+        fontWeight: 500,
+        textDecoration: 'none',
         transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         cursor: 'pointer',
-        border: 'none',
-        textDecoration: 'none',
-      }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.transform = 'translateY(-3px) scale(1.03)'
-        el.style.boxShadow = '0 20px 40px rgba(0,212,255,0.3), 0 0 60px rgba(123,47,247,0.15)'
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.transform = ''
-        el.style.boxShadow = 'none'
+        ...(isPrimary ? {
+          background: '#2997ff',
+          color: '#fff',
+          transform: hover ? 'scale(1.04)' : 'scale(1)',
+          boxShadow: hover ? '0 0 0 4px rgba(41, 151, 255, 0.3), 0 20px 40px rgba(41, 151, 255, 0.3)' : 'none',
+        } : {
+          background: 'rgba(255, 255, 255, 0.08)',
+          color: '#fff',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          transform: hover ? 'scale(1.04)' : 'scale(1)',
+        }),
       }}
     >
       {children}
@@ -114,51 +124,88 @@ function GradientBtn({ children, href, large = false, className = '' }: { childr
   )
 }
 
-// === NAVBAR ===
+const Card = ({ children, hover = true, glow = false, style = {} }: { children: ReactNode; hover?: boolean; glow?: boolean; style?: CSSProperties }) => {
+  const [isHover, setIsHover] = useState(false)
+  return (
+    <div
+      onMouseEnter={() => setIsHover(true)}
+      onMouseLeave={() => setIsHover(false)}
+      style={{
+        background: 'rgba(255, 255, 255, 0.04)',
+        backdropFilter: 'blur(40px)',
+        WebkitBackdropFilter: 'blur(40px)',
+        borderRadius: '24px',
+        border: `1px solid rgba(255, 255, 255, ${isHover && hover ? 0.15 : 0.08})`,
+        padding: '2rem',
+        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+        transform: isHover && hover ? 'translateY(-8px) scale(1.02)' : 'none',
+        boxShadow: glow ? '0 0 60px rgba(41, 151, 255, 0.1)' : (isHover && hover ? '0 30px 60px rgba(0, 0, 0, 0.3)' : 'none'),
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+// ============================================================================
+// SECTIONS
+// ============================================================================
+
+function ProgressBar() {
+  const progress = useScrollProgress()
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '2px', zIndex: 100, background: 'rgba(255,255,255,0.1)' }}>
+      <div style={{ height: '100%', width: `${progress * 100}%`, background: 'linear-gradient(90deg, #2997ff, #af52de)', transition: 'width 0.1s linear' }} />
+    </div>
+  )
+}
+
 function Navbar() {
-  const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50)
-    window.addEventListener('scroll', handler)
+    window.addEventListener('scroll', handler, { passive: true })
     return () => window.removeEventListener('scroll', handler)
   }, [])
 
+  const navItems = ['Leistungen', 'Pakete', 'Prozess', 'Kontakt']
+
   return (
     <nav style={{
-      position: 'fixed', top: 0, width: '100%', zIndex: 50,
-      backdropFilter: 'blur(20px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-      background: scrolled ? 'rgba(10,15,28,0.85)' : 'rgba(10,15,28,0.5)',
-      borderBottom: '1px solid rgba(255,255,255,0.05)',
-      transition: 'all 0.5s ease',
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+      background: scrolled ? 'rgba(0, 0, 0, 0.72)' : 'transparent',
+      backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
+      WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
+      borderBottom: scrolled ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
+      transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
     }}>
-      <div style={{ maxWidth: '80rem', margin: '0 auto', padding: scrolled ? '0.75rem 1.5rem' : '1.25rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'padding 0.5s ease' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <a href="#" style={{ textDecoration: 'none' }}><Logo /></a>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }} className="hidden md:flex">
-          {['Leistungen', 'Pakete', 'Prozess', 'Kontakt'].map(item => (
+        
+        <div className="nav-links" style={{ display: 'none', alignItems: 'center', gap: '2rem' }}>
+          {navItems.map(item => (
             <a key={item} href={`#${item.toLowerCase()}`} style={{
-              color: '#9ca3af', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500,
-              transition: 'color 0.3s',
-            }} onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')} onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}>
+              color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none', fontSize: '0.875rem',
+              transition: 'color 0.3s', fontWeight: 400,
+            }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}>
               {item}
             </a>
           ))}
-          <GradientBtn href="#kontakt">Projekt starten</GradientBtn>
+          <GlowButton href="#kontakt">Starten</GlowButton>
         </div>
 
-        <button onClick={() => setOpen(!open)} className="md:hidden" style={{ color: '#fff', background: 'none', border: 'none', padding: '0.5rem', cursor: 'pointer' }}>
-          {open ? <X size={24} /> : <Menu size={24} />}
+        <button onClick={() => setMenuOpen(!menuOpen)} className="menu-btn" style={{ display: 'flex', background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '0.5rem' }}>
+          {menuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
-      {open && (
-        <div className="md:hidden" style={{ padding: '0 1.5rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {['Leistungen', 'Pakete', 'Prozess', 'Kontakt'].map(item => (
-            <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setOpen(false)}
-              style={{ color: '#d1d5db', textDecoration: 'none', padding: '0.5rem 0', fontSize: '1.125rem' }}>
+      {menuOpen && (
+        <div style={{ padding: '1rem 2rem 2rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(0, 0, 0, 0.9)', backdropFilter: 'blur(40px)' }}>
+          {navItems.map(item => (
+            <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMenuOpen(false)} style={{ color: '#fff', textDecoration: 'none', fontSize: '1.25rem', padding: '0.5rem 0' }}>
               {item}
             </a>
           ))}
@@ -168,127 +215,124 @@ function Navbar() {
   )
 }
 
-// === HERO ===
 function Hero() {
+  const { ref, offset } = useParallax(0.3)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      setMousePos({ x: (e.clientX / window.innerWidth - 0.5) * 20, y: (e.clientY / window.innerHeight - 0.5) * 20 })
+    }
+    window.addEventListener('mousemove', handler)
+    return () => window.removeEventListener('mousemove', handler)
+  }, [])
+
   return (
-    <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '6rem 1.5rem 4rem' }}>
-      {/* Blobs */}
-      <div style={{ position: 'absolute', top: '15%', left: '15%', width: '500px', height: '500px', background: 'rgba(0,212,255,0.12)', borderRadius: '50%', filter: 'blur(100px)', animation: 'blob 12s ease-in-out infinite' }} />
-      <div style={{ position: 'absolute', bottom: '15%', right: '15%', width: '400px', height: '400px', background: 'rgba(123,47,247,0.12)', borderRadius: '50%', filter: 'blur(100px)', animation: 'blob 12s ease-in-out infinite 4s' }} />
-
-      <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: '60rem', margin: '0 auto' }}>
-        {/* Badge */}
-        <Reveal>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-            padding: '0.625rem 1.25rem', borderRadius: '9999px',
-            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-            marginBottom: '2.5rem', animation: 'float 6s ease-in-out infinite',
-          }}>
-            <Sparkles size={14} style={{ color: '#00d4ff' }} />
-            <span style={{ fontSize: '0.875rem', color: '#d1d5db', fontWeight: 500 }}>Websites die begeistern</span>
+    <section ref={ref} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '8rem 2rem 6rem' }}>
+      {/* Mesh Gradient Background */}
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(41, 151, 255, 0.15), transparent)' }} />
+      <div style={{ position: 'absolute', top: '20%', left: '10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(175, 82, 222, 0.12), transparent 70%)', filter: 'blur(60px)', transform: `translate(${mousePos.x}px, ${mousePos.y}px)`, transition: 'transform 0.3s ease-out' }} />
+      <div style={{ position: 'absolute', bottom: '10%', right: '10%', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(41, 151, 255, 0.1), transparent 70%)', filter: 'blur(60px)', transform: `translate(${-mousePos.x}px, ${-mousePos.y}px)`, transition: 'transform 0.3s ease-out' }} />
+      
+      <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: '900px', transform: `translateY(${offset}px)` }}>
+        <FadeIn>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '100px', background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.1)', marginBottom: '2rem' }}>
+            <Sparkles size={14} style={{ color: '#2997ff' }} />
+            <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)', fontWeight: 500 }}>Webdesign der nächsten Generation</span>
           </div>
-        </Reveal>
+        </FadeIn>
 
-        {/* Logo */}
-        <Reveal delay={200}>
-          <h1 style={{ marginBottom: '1.5rem', textShadow: '0 0 60px rgba(0,212,255,0.2), 0 0 120px rgba(123,47,247,0.1)' }}>
-            <Logo size="hero" />
+        <FadeIn delay={0.1}>
+          <h1 style={{ margin: '0 0 1.5rem', lineHeight: 1.05 }}>
+            <Logo size="xl" />
           </h1>
-        </Reveal>
+        </FadeIn>
 
-        <Reveal delay={400}>
-          <p style={{ fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', color: '#9ca3af', marginBottom: '1rem', maxWidth: '48rem', margin: '0 auto 1rem', lineHeight: 1.6, fontWeight: 300 }}>
-            Moderne Websites, die dein Business{' '}
-            <span style={{ color: '#fff', fontWeight: 600 }}>auf das nächste Level</span>{' '}bringen.
+        <FadeIn delay={0.2}>
+          <p style={{ fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '0.75rem', lineHeight: 1.5, fontWeight: 400 }}>
+            Websites, die nicht nur gut aussehen.
           </p>
-        </Reveal>
+        </FadeIn>
 
-        <Reveal delay={600}>
-          <p style={{ color: '#6b7280', marginBottom: '3rem', fontSize: '1.125rem', fontWeight: 300, letterSpacing: '0.15em' }}>
-            Schnell · Bezahlbar · Professionell
+        <FadeIn delay={0.3}>
+          <p style={{ fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', color: '#fff', marginBottom: '3rem', lineHeight: 1.5, fontWeight: 600 }}>
+            Sondern <span style={{ background: 'linear-gradient(135deg, #2997ff, #af52de)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>begeistern.</span>
           </p>
-        </Reveal>
+        </FadeIn>
 
-        <Reveal delay={800}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }} className="sm:flex-row sm:justify-center">
-            <GradientBtn href="#kontakt" large>
-              Projekt starten <ArrowRight size={20} />
-            </GradientBtn>
-            <a href="#pakete" style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
-              padding: '1.25rem 2.5rem', borderRadius: '1rem', fontWeight: 600,
-              color: '#d1d5db', fontSize: '1.125rem', textDecoration: 'none',
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              transition: 'all 0.3s ease',
-            }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-            >
-              Pakete ansehen <ChevronRight size={20} />
-            </a>
+        <FadeIn delay={0.4}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+            <GlowButton href="#kontakt" size="lg">
+              Projekt starten <ArrowRight size={18} />
+            </GlowButton>
+            <GlowButton href="#pakete" variant="secondary" size="lg">
+              <Play size={16} fill="#fff" /> Pakete ansehen
+            </GlowButton>
           </div>
-        </Reveal>
+        </FadeIn>
 
-        {/* Scroll indicator */}
-        <Reveal delay={1200}>
-          <div style={{ marginTop: '5rem' }}>
-            <div style={{ width: '1.5rem', height: '2.5rem', borderRadius: '9999px', border: '2px solid rgba(255,255,255,0.2)', margin: '0 auto', display: 'flex', justifyContent: 'center', paddingTop: '0.5rem' }}>
-              <div style={{ width: '3px', height: '8px', borderRadius: '9999px', background: 'rgba(255,255,255,0.4)', animation: 'pulse 2s ease-in-out infinite' }} />
-            </div>
+        <FadeIn delay={0.6}>
+          <div style={{ marginTop: '5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3rem', flexWrap: 'wrap' }}>
+            {['50+ Projekte', '100% Zufriedenheit', '24h Antwortzeit'].map((stat, i) => (
+              <div key={i} style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{stat}</div>
+              </div>
+            ))}
           </div>
-        </Reveal>
+        </FadeIn>
+      </div>
+
+      {/* Scroll indicator */}
+      <div style={{ position: 'absolute', bottom: '3rem', left: '50%', transform: 'translateX(-50%)', animation: 'bounce 2s infinite' }}>
+        <div style={{ width: '24px', height: '40px', borderRadius: '12px', border: '2px solid rgba(255, 255, 255, 0.2)', display: 'flex', justifyContent: 'center', paddingTop: '8px' }}>
+          <div style={{ width: '3px', height: '8px', borderRadius: '3px', background: '#2997ff', animation: 'scrollPulse 2s infinite' }} />
+        </div>
       </div>
     </section>
   )
 }
 
-// === SECTION HEADER ===
-function SectionHeader({ label, labelColor, title, highlight, desc }: { label: string; labelColor: string; title: string; highlight: string; desc: string }) {
-  return (
-    <Reveal>
-      <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-        <p style={{ color: labelColor, fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '1rem' }}>{label}</p>
-        <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 700, marginBottom: '1.5rem', fontFamily: 'Poppins, sans-serif' }}>
-          {title}{' '}
-          <span style={{ background: 'linear-gradient(135deg, #00d4ff, #7b2ff7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{highlight}</span>
-        </h2>
-        <p style={{ color: '#9ca3af', fontSize: '1.125rem', maxWidth: '36rem', margin: '0 auto' }}>{desc}</p>
-      </div>
-    </Reveal>
-  )
-}
-
-// === SERVICES ===
 function Services() {
   const services = [
-    { icon: Globe, title: 'Websites', desc: 'Landingpages, Unternehmensseiten, Portfolios — modern und blitzschnell.', gradient: 'linear-gradient(135deg, #00d4ff, #0077b6)' },
-    { icon: ShoppingBag, title: 'Online Shops', desc: 'Verkaufe deine Produkte online. Von einfach bis komplex.', gradient: 'linear-gradient(135deg, #7b2ff7, #c471f5)' },
-    { icon: Smartphone, title: 'Web Apps', desc: 'Interaktive Anwendungen die auf jedem Gerät perfekt laufen.', gradient: 'linear-gradient(135deg, #f97316, #ef4444)' },
-    { icon: Code, title: 'Wartung & Support', desc: 'Updates, Hosting, Änderungen — wir kümmern uns um alles.', gradient: 'linear-gradient(135deg, #22c55e, #10b981)' },
+    { icon: Globe, title: 'Websites', desc: 'Von der Landingpage bis zur Unternehmenswebsite. Blitzschnell, SEO-optimiert, responsive.', gradient: ['#2997ff', '#0077ed'] },
+    { icon: ShoppingBag, title: 'Online Shops', desc: 'E-Commerce Lösungen die verkaufen. Shopify, WooCommerce, oder Custom.', gradient: ['#af52de', '#8944ab'] },
+    { icon: Smartphone, title: 'Web Apps', desc: 'Interaktive Anwendungen mit React, Next.js & Co. Perfekt auf jedem Gerät.', gradient: ['#ff6b6b', '#ee5a5a'] },
+    { icon: Code, title: 'Wartung', desc: 'Updates, Hosting, Support. Wir kümmern uns um alles — du dich ums Business.', gradient: ['#34c759', '#28a745'] },
   ]
 
   return (
-    <section id="leistungen" style={{ padding: '8rem 1.5rem' }}>
-      <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
-        <SectionHeader label="Leistungen" labelColor="#00d4ff" title="Was wir" highlight="machen" desc="Alles aus einer Hand — von der Idee bis zum fertigen Produkt." />
+    <section id="leistungen" style={{ padding: '10rem 2rem', position: 'relative' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <FadeIn>
+          <p style={{ color: '#2997ff', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Leistungen</p>
+        </FadeIn>
+        <FadeIn delay={0.1}>
+          <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 700, textAlign: 'center', marginBottom: '1rem', letterSpacing: '-0.03em' }}>
+            Alles, was du brauchst.
+          </h2>
+        </FadeIn>
+        <FadeIn delay={0.2}>
+          <p style={{ fontSize: '1.25rem', color: 'rgba(255, 255, 255, 0.6)', textAlign: 'center', maxWidth: '600px', margin: '0 auto 5rem' }}>
+            Von der ersten Idee bis zum fertigen Produkt — wir sind dein Partner.
+          </p>
+        </FadeIn>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
           {services.map((s, i) => (
-            <Reveal key={i} delay={i * 100}>
-              <GlassCard>
+            <FadeIn key={i} delay={0.1 * i}>
+              <Card>
                 <div style={{
-                  width: '3.5rem', height: '3.5rem', borderRadius: '1rem',
-                  background: s.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginBottom: '1.5rem', transition: 'transform 0.5s ease',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                  width: '56px', height: '56px', borderRadius: '16px',
+                  background: `linear-gradient(135deg, ${s.gradient[0]}, ${s.gradient[1]})`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem',
+                  boxShadow: `0 8px 24px ${s.gradient[0]}33`,
                 }}>
                   <s.icon size={24} color="#fff" />
                 </div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.75rem' }}>{s.title}</h3>
-                <p style={{ color: '#9ca3af', fontSize: '0.875rem', lineHeight: 1.7 }}>{s.desc}</p>
-              </GlassCard>
-            </Reveal>
+                <h3 style={{ fontSize: '1.375rem', fontWeight: 600, marginBottom: '0.75rem', letterSpacing: '-0.02em' }}>{s.title}</h3>
+                <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '1rem', lineHeight: 1.7 }}>{s.desc}</p>
+              </Card>
+            </FadeIn>
           ))}
         </div>
       </div>
@@ -296,132 +340,118 @@ function Services() {
   )
 }
 
-// === PACKAGES ===
 function Packages() {
   const packages = [
-    {
-      name: 'Starter', price: '499', desc: 'Perfekt für den Einstieg', icon: MousePointer2, highlight: false,
-      features: ['Landingpage (1 Seite)', 'Responsive Design', 'Kontaktformular', 'SEO Grundlagen', 'SSL Zertifikat', '1 Korrekturschleife'],
-    },
-    {
-      name: 'Business', price: '1.299', desc: 'Für wachsende Unternehmen', icon: Layers, highlight: true,
-      features: ['Bis zu 7 Seiten', 'Responsive Design', 'Kontaktformular', 'SEO Optimierung', 'Google Analytics', 'CMS System', '3 Korrekturschleifen', 'Social Media Integration'],
-    },
-    {
-      name: 'Premium', price: '2.999', desc: 'Maximale Performance', icon: Sparkles, highlight: false,
-      features: ['Bis zu 15 Seiten', 'Individuelles Design', 'Online Shop möglich', 'SEO + Performance', 'CMS System', 'Animations & Effekte', 'Unbegrenzte Korrekturen', 'Priority Support 12 Monate'],
-    },
+    { name: 'Starter', price: '499', desc: 'Der perfekte Einstieg', features: ['Landingpage (1 Seite)', 'Mobile-optimiert', 'Kontaktformular', 'SEO Basics', 'SSL Zertifikat'], highlight: false },
+    { name: 'Business', price: '1.299', desc: 'Für wachsende Unternehmen', features: ['Bis zu 7 Seiten', 'CMS zum Selbstbearbeiten', 'SEO Optimierung', 'Google Analytics', 'Social Media Integration', '3 Korrekturschleifen'], highlight: true },
+    { name: 'Premium', price: '2.999', desc: 'Maximale Performance', features: ['Bis zu 15 Seiten', 'Individuelles Design', 'Shop-Integration möglich', 'Animations & Effekte', 'Priority Support', 'Unbegrenzte Korrekturen'], highlight: false },
   ]
 
   return (
-    <section id="pakete" style={{ padding: '8rem 1.5rem', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '800px', height: '400px', background: 'radial-gradient(ellipse, rgba(0,212,255,0.06), transparent)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+    <section id="pakete" style={{ padding: '10rem 2rem', position: 'relative' }}>
+      {/* Glow */}
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '800px', height: '600px', background: 'radial-gradient(ellipse, rgba(41, 151, 255, 0.08), transparent 70%)', pointerEvents: 'none' }} />
 
-      <div style={{ maxWidth: '80rem', margin: '0 auto', position: 'relative', zIndex: 10 }}>
-        <SectionHeader label="Pakete" labelColor="#7b2ff7" title="Transparent." highlight="Fair." desc="Keine versteckten Kosten. Keine bösen Überraschungen." />
+      <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
+        <FadeIn>
+          <p style={{ color: '#af52de', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Pakete</p>
+        </FadeIn>
+        <FadeIn delay={0.1}>
+          <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 700, textAlign: 'center', marginBottom: '1rem', letterSpacing: '-0.03em' }}>
+            Einfach. Transparent.
+          </h2>
+        </FadeIn>
+        <FadeIn delay={0.2}>
+          <p style={{ fontSize: '1.25rem', color: 'rgba(255, 255, 255, 0.6)', textAlign: 'center', maxWidth: '500px', margin: '0 auto 5rem' }}>
+            Keine versteckten Kosten. Kein Kleingedrucktes.
+          </p>
+        </FadeIn>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
           {packages.map((pkg, i) => (
-            <Reveal key={i} delay={i * 150}>
+            <FadeIn key={i} delay={0.15 * i}>
               <div style={{ position: 'relative' }}>
                 {pkg.highlight && (
                   <div style={{
-                    position: 'absolute', top: '-1rem', left: '50%', transform: 'translateX(-50%)',
-                    padding: '0.375rem 1.25rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 700,
-                    background: 'linear-gradient(135deg, #00d4ff, #7b2ff7)', color: '#fff', letterSpacing: '0.05em', zIndex: 10,
+                    position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', zIndex: 10,
+                    padding: '6px 16px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 600,
+                    background: 'linear-gradient(135deg, #2997ff, #af52de)', color: '#fff',
                   }}>
-                    ✨ BELIEBT
+                    Beliebt
                   </div>
                 )}
-                <GlassCard glow={pkg.highlight} hover={!pkg.highlight} className={pkg.highlight ? '' : ''}>
-                  <div style={{
-                    width: '3rem', height: '3rem', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    marginBottom: '1.5rem',
-                    background: pkg.highlight ? 'linear-gradient(135deg, #00d4ff, #7b2ff7)' : 'rgba(255,255,255,0.05)',
-                  }}>
-                    <pkg.icon size={20} color={pkg.highlight ? '#fff' : '#9ca3af'} />
+                <Card glow={pkg.highlight} hover={!pkg.highlight} style={{ height: '100%' }}>
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>{pkg.name}</h3>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.9375rem' }}>{pkg.desc}</p>
                   </div>
-
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', fontFamily: 'Poppins, sans-serif' }}>{pkg.name}</h3>
-                  <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginBottom: '2rem' }}>{pkg.desc}</p>
 
                   <div style={{ marginBottom: '2rem' }}>
-                    <span style={{ fontSize: '3rem', fontWeight: 700 }}>€{pkg.price}</span>
-                    <span style={{ color: '#6b7280', fontSize: '0.875rem', marginLeft: '0.5rem' }}>einmalig</span>
+                    <span style={{ fontSize: '3.5rem', fontWeight: 700, letterSpacing: '-0.03em' }}>€{pkg.price}</span>
+                    <span style={{ color: 'rgba(255, 255, 255, 0.5)', marginLeft: '0.5rem' }}>einmalig</span>
                   </div>
 
-                  <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
                     {pkg.features.map((f, j) => (
-                      <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', fontSize: '0.875rem', color: '#d1d5db' }}>
-                        <Check size={16} color="#00d4ff" style={{ marginTop: '2px', flexShrink: 0 }} />
+                      <li key={j} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9375rem' }}>
+                        <Check size={16} color="#2997ff" />
                         {f}
                       </li>
                     ))}
                   </ul>
 
-                  {pkg.highlight ? (
-                    <GradientBtn href="#kontakt" className="w-full" large>Jetzt starten</GradientBtn>
-                  ) : (
-                    <a href="#kontakt" style={{
-                      display: 'block', textAlign: 'center', padding: '1rem', borderRadius: '1rem',
-                      fontWeight: 600, color: '#d1d5db', border: '1px solid rgba(255,255,255,0.1)',
-                      textDecoration: 'none', transition: 'all 0.3s ease',
-                    }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#fff' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#d1d5db' }}
-                    >
-                      Jetzt starten
-                    </a>
-                  )}
-                </GlassCard>
+                  <GlowButton href="#kontakt" variant={pkg.highlight ? 'primary' : 'secondary'}>
+                    Auswählen
+                  </GlowButton>
+                </Card>
               </div>
-            </Reveal>
+            </FadeIn>
           ))}
         </div>
-
-        <Reveal delay={500}>
-          <p style={{ textAlign: 'center', color: '#6b7280', marginTop: '4rem', fontSize: '0.875rem' }}>
-            Individuelle Anforderungen?{' '}
-            <a href="#kontakt" style={{ color: '#00d4ff', textDecoration: 'underline', textUnderlineOffset: '4px' }}>Schreib uns</a>
-          </p>
-        </Reveal>
       </div>
     </section>
   )
 }
 
-// === PROCESS ===
 function Process() {
   const steps = [
-    { num: '01', title: 'Gespräch', desc: 'Wir lernen dich und dein Business kennen.' },
-    { num: '02', title: 'Konzept', desc: 'Design-Entwürfe und dein Feedback.' },
-    { num: '03', title: 'Umsetzung', desc: 'Wir bauen deine Website. Modern & schnell.' },
-    { num: '04', title: 'Launch', desc: 'Go live! Wir kümmern uns um alles.' },
+    { num: '01', title: 'Kennenlernen', desc: 'Wir sprechen über dein Projekt, deine Ziele und Vorstellungen.' },
+    { num: '02', title: 'Konzept', desc: 'Wir erstellen Design-Entwürfe. Du gibst Feedback bis es perfekt ist.' },
+    { num: '03', title: 'Entwicklung', desc: 'Wir bauen deine Website. Pixel für Pixel, Zeile für Zeile.' },
+    { num: '04', title: 'Launch', desc: 'Deine Website geht live. Wir feiern gemeinsam.' },
   ]
 
   return (
-    <section id="prozess" style={{ padding: '8rem 1.5rem' }}>
-      <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
-        <SectionHeader label="Prozess" labelColor="#f97316" title="In 4 Schritten" highlight="online" desc="Von der Idee zur fertigen Website." />
+    <section id="prozess" style={{ padding: '10rem 2rem' }}>
+      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        <FadeIn>
+          <p style={{ color: '#ff6b6b', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Prozess</p>
+        </FadeIn>
+        <FadeIn delay={0.1}>
+          <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 700, textAlign: 'center', marginBottom: '5rem', letterSpacing: '-0.03em' }}>
+            So arbeiten wir.
+          </h2>
+        </FadeIn>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
+        <div style={{ display: 'grid', gap: '3rem' }}>
           {steps.map((step, i) => (
-            <Reveal key={i} delay={i * 150}>
-              <div style={{ textAlign: 'center' }}>
-                <GlassCard hover>
-                  <div style={{
-                    fontSize: '2.5rem', fontWeight: 900, fontFamily: 'Poppins, sans-serif',
-                    background: 'linear-gradient(135deg, #00d4ff, #7b2ff7)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                    marginBottom: '1rem',
-                  }}>
-                    {step.num}
-                  </div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.75rem' }}>{step.title}</h3>
-                  <p style={{ color: '#9ca3af', fontSize: '0.875rem', lineHeight: 1.7 }}>{step.desc}</p>
-                </GlassCard>
+            <FadeIn key={i} delay={0.1 * i}>
+              <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
+                <div style={{
+                  minWidth: '80px', height: '80px', borderRadius: '24px',
+                  background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.5rem', fontWeight: 700,
+                  background: 'linear-gradient(135deg, rgba(41, 151, 255, 0.1), rgba(175, 82, 222, 0.1))',
+                }}>
+                  <span style={{ background: 'linear-gradient(135deg, #2997ff, #af52de)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{step.num}</span>
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>{step.title}</h3>
+                  <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '1.0625rem', lineHeight: 1.7 }}>{step.desc}</p>
+                </div>
               </div>
-            </Reveal>
+            </FadeIn>
           ))}
         </div>
       </div>
@@ -429,36 +459,46 @@ function Process() {
   )
 }
 
-// === TESTIMONIALS ===
 function Testimonials() {
   const reviews = [
-    { name: 'Laura M.', role: 'Yoga Studio', text: 'Endlich eine Website auf die ich stolz bin! Super schnell und unkompliziert.', avatar: '👩‍🦰' },
-    { name: 'Markus B.', role: 'IT-Service', text: 'Professionell, modern und das zu einem fairen Preis. Klare Empfehlung!', avatar: '👨‍💼' },
-    { name: 'Sarah K.', role: 'Freelancerin', text: 'Mein Portfolio sieht jetzt richtig premium aus. Zusammenarbeit war mega smooth.', avatar: '👩‍🎨' },
+    { name: 'Laura M.', role: 'Yoga Studio', text: 'Endlich eine Website, auf die ich stolz bin. Schnell, unkompliziert, einfach mega.', rating: 5 },
+    { name: 'Markus B.', role: 'IT-Service', text: 'Professionell, modern, und der Preis stimmt. Klare Empfehlung!', rating: 5 },
+    { name: 'Sarah K.', role: 'Freelancerin', text: 'Mein Portfolio sieht jetzt aus wie von einer teuren Agentur. Aber bezahlbar.', rating: 5 },
   ]
 
   return (
-    <section style={{ padding: '8rem 1.5rem' }}>
-      <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
-        <SectionHeader label="Kundenstimmen" labelColor="#eab308" title="Das sagen unsere" highlight="Kunden" desc="" />
+    <section style={{ padding: '10rem 2rem' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <FadeIn>
+          <p style={{ color: '#34c759', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Kundenstimmen</p>
+        </FadeIn>
+        <FadeIn delay={0.1}>
+          <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 700, textAlign: 'center', marginBottom: '5rem', letterSpacing: '-0.03em' }}>
+            Was andere sagen.
+          </h2>
+        </FadeIn>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
-          {reviews.map((t, i) => (
-            <Reveal key={i} delay={i * 100}>
-              <GlassCard>
-                <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '1.5rem' }}>
-                  {Array(5).fill(0).map((_, j) => <Star key={j} size={16} color="#eab308" fill="#eab308" />)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+          {reviews.map((r, i) => (
+            <FadeIn key={i} delay={0.1 * i}>
+              <Card>
+                <div style={{ display: 'flex', gap: '2px', marginBottom: '1.25rem' }}>
+                  {Array(r.rating).fill(0).map((_, j) => <Star key={j} size={16} fill="#f5a623" color="#f5a623" />)}
                 </div>
-                <p style={{ color: '#d1d5db', fontSize: '0.875rem', marginBottom: '2rem', lineHeight: 1.8, fontStyle: 'italic' }}>"{t.text}"</p>
+                <p style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.0625rem', lineHeight: 1.7, marginBottom: '1.5rem', fontStyle: 'italic' }}>
+                  "{r.text}"
+                </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ fontSize: '1.5rem' }}>{t.avatar}</span>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #2997ff, #af52de)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
+                    {r.name[0]}
+                  </div>
                   <div>
-                    <p style={{ fontWeight: 600, fontSize: '0.875rem' }}>{t.name}</p>
-                    <p style={{ color: '#6b7280', fontSize: '0.75rem' }}>{t.role}</p>
+                    <p style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{r.name}</p>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.8125rem' }}>{r.role}</p>
                   </div>
                 </div>
-              </GlassCard>
-            </Reveal>
+              </Card>
+            </FadeIn>
           ))}
         </div>
       </div>
@@ -466,155 +506,163 @@ function Testimonials() {
   )
 }
 
-// === CTA BANNER ===
-function CtaBanner() {
+function CTA() {
   return (
-    <section style={{ padding: '5rem 1.5rem' }}>
-      <Reveal>
-        <div style={{ maxWidth: '60rem', margin: '0 auto' }}>
-          <div style={{
-            borderRadius: '2rem', padding: 'clamp(3rem, 5vw, 5rem)', textAlign: 'center', position: 'relative', overflow: 'hidden',
-            background: 'linear-gradient(135deg, rgba(0,212,255,0.08), rgba(123,47,247,0.08))',
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}>
-            <div style={{ position: 'absolute', top: 0, right: 0, width: '300px', height: '300px', background: 'rgba(0,212,255,0.1)', borderRadius: '50%', filter: 'blur(80px)', animation: 'blob 12s ease-in-out infinite' }} />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, width: '300px', height: '300px', background: 'rgba(123,47,247,0.1)', borderRadius: '50%', filter: 'blur(80px)', animation: 'blob 12s ease-in-out infinite 4s' }} />
-
-            <div style={{ position: 'relative', zIndex: 10 }}>
-              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 3rem)', fontWeight: 700, marginBottom: '1.5rem', fontFamily: 'Poppins, sans-serif', textShadow: '0 0 40px rgba(0,212,255,0.2)' }}>
-                Bereit für deine neue Website?
-              </h2>
-              <p style={{ color: '#9ca3af', fontSize: '1.125rem', marginBottom: '2.5rem', maxWidth: '32rem', margin: '0 auto 2.5rem' }}>
-                Lass uns gemeinsam etwas Großartiges bauen.
-              </p>
-              <GradientBtn href="#kontakt" large>
-                Kostenloses Erstgespräch <ArrowRight size={20} />
-              </GradientBtn>
-            </div>
+    <section style={{ padding: '6rem 2rem' }}>
+      <FadeIn>
+        <div style={{
+          maxWidth: '900px', margin: '0 auto', borderRadius: '32px', padding: 'clamp(3rem, 8vw, 5rem)',
+          background: 'linear-gradient(135deg, rgba(41, 151, 255, 0.12), rgba(175, 82, 222, 0.12))',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          textAlign: 'center', position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', top: '-50%', right: '-20%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(41, 151, 255, 0.15), transparent 70%)', filter: 'blur(40px)' }} />
+          <div style={{ position: 'absolute', bottom: '-50%', left: '-20%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(175, 82, 222, 0.15), transparent 70%)', filter: 'blur(40px)' }} />
+          
+          <div style={{ position: 'relative' }}>
+            <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 700, marginBottom: '1rem', letterSpacing: '-0.03em' }}>
+              Bereit für deine neue Website?
+            </h2>
+            <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1.25rem', marginBottom: '2rem' }}>
+              Lass uns gemeinsam etwas Großartiges bauen.
+            </p>
+            <GlowButton href="#kontakt" size="lg">
+              Kostenloses Erstgespräch <ArrowRight size={18} />
+            </GlowButton>
           </div>
         </div>
-      </Reveal>
+      </FadeIn>
     </section>
   )
 }
 
-// === CONTACT ===
 function Contact() {
-  const inputStyle = {
-    width: '100%', padding: '1rem 1.5rem', borderRadius: '1rem', fontSize: '1rem',
-    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-    color: '#fff', outline: 'none', transition: 'border-color 0.3s ease',
-    fontFamily: 'Inter, sans-serif',
+  const inputStyle: CSSProperties = {
+    width: '100%', padding: '1rem 1.25rem', borderRadius: '12px', fontSize: '1rem',
+    background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)',
+    color: '#fff', outline: 'none', fontFamily: 'inherit', transition: 'border-color 0.3s, background 0.3s',
   }
 
   return (
-    <section id="kontakt" style={{ padding: '8rem 1.5rem' }}>
-      <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-        <SectionHeader label="Kontakt" labelColor="#00d4ff" title="Lass uns" highlight="starten" desc="Schreib uns — wir melden uns innerhalb von 24 Stunden." />
+    <section id="kontakt" style={{ padding: '10rem 2rem' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <FadeIn>
+          <p style={{ color: '#2997ff', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Kontakt</p>
+        </FadeIn>
+        <FadeIn delay={0.1}>
+          <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 700, textAlign: 'center', marginBottom: '1rem', letterSpacing: '-0.03em' }}>
+            Schreib uns.
+          </h2>
+        </FadeIn>
+        <FadeIn delay={0.2}>
+          <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '1.125rem', textAlign: 'center', marginBottom: '3rem' }}>
+            Wir melden uns innerhalb von 24 Stunden.
+          </p>
+        </FadeIn>
 
-        <Reveal delay={200}>
-          <GlassCard hover={false}>
-            <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} onSubmit={(e) => { e.preventDefault(); alert('Nachricht gesendet! Wir melden uns bei dir.') }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+        <FadeIn delay={0.3}>
+          <Card hover={false}>
+            <form style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }} onSubmit={e => { e.preventDefault(); alert('Nachricht gesendet! ✨') }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
                 <input type="text" placeholder="Dein Name" required style={inputStyle}
-                  onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.5)'}
-                  onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'} />
+                  onFocus={e => { e.currentTarget.style.borderColor = 'rgba(41, 151, 255, 0.5)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)' }}
+                  onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)' }} />
                 <input type="email" placeholder="Deine E-Mail" required style={inputStyle}
-                  onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.5)'}
-                  onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'} />
+                  onFocus={e => { e.currentTarget.style.borderColor = 'rgba(41, 151, 255, 0.5)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)' }}
+                  onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)' }} />
               </div>
-              <select style={{ ...inputStyle, color: '#6b7280', appearance: 'none' as const }}>
-                <option value="">Welches Paket interessiert dich?</option>
-                <option value="starter">Starter — €499</option>
-                <option value="business">Business — €1.299</option>
-                <option value="premium">Premium — €2.999</option>
-                <option value="custom">Individuell</option>
+              <select style={{ ...inputStyle, color: 'rgba(255, 255, 255, 0.5)' }}>
+                <option value="">Welches Paket?</option>
+                <option>Starter — €499</option>
+                <option>Business — €1.299</option>
+                <option>Premium — €2.999</option>
+                <option>Individuell</option>
               </select>
-              <textarea placeholder="Erzähl uns von deinem Projekt..." rows={5} required
-                style={{ ...inputStyle, resize: 'none' as const }}
-                onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.5)'}
-                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'} />
+              <textarea placeholder="Erzähl uns von deinem Projekt..." rows={4} required style={{ ...inputStyle, resize: 'none' }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(41, 151, 255, 0.5)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)' }} />
               <button type="submit" style={{
-                width: '100%', padding: '1.25rem', borderRadius: '1rem', fontWeight: 600,
-                fontSize: '1.125rem', color: '#fff', border: 'none', cursor: 'pointer',
-                background: 'linear-gradient(135deg, #00b4d8, #7b2ff7)',
-                transition: 'all 0.4s ease',
+                width: '100%', padding: '1rem', borderRadius: '12px', fontSize: '1rem', fontWeight: 600,
+                color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                background: '#2997ff', transition: 'all 0.3s',
               }}
-                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,212,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = '' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#0077ed'; e.currentTarget.style.boxShadow = '0 0 0 4px rgba(41, 151, 255, 0.3)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#2997ff'; e.currentTarget.style.boxShadow = 'none' }}
               >
-                Nachricht senden ✨
+                Nachricht senden
               </button>
             </form>
-          </GlassCard>
-        </Reveal>
+          </Card>
+        </FadeIn>
       </div>
     </section>
   )
 }
 
-// === FOOTER ===
 function Footer() {
   return (
-    <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '3rem 1.5rem' }}>
-      <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
+    <footer style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', padding: '3rem 2rem' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
         <Logo />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', fontSize: '0.875rem' }}>
-          <a href="#" style={{ color: '#6b7280', textDecoration: 'none', transition: 'color 0.3s' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}>Impressum</a>
-          <a href="#" style={{ color: '#6b7280', textDecoration: 'none', transition: 'color 0.3s' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}>Datenschutz</a>
+        <div style={{ display: 'flex', gap: '2rem', fontSize: '0.875rem' }}>
+          <a href="#" style={{ color: 'rgba(255, 255, 255, 0.5)', textDecoration: 'none' }}>Impressum</a>
+          <a href="#" style={{ color: 'rgba(255, 255, 255, 0.5)', textDecoration: 'none' }}>Datenschutz</a>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
           {[Instagram, Linkedin, Mail].map((Icon, i) => (
             <a key={i} href="#" style={{
-              width: '2.5rem', height: '2.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#9ca3af', textDecoration: 'none',
-              transition: 'all 0.3s ease',
+              width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', color: 'rgba(255, 255, 255, 0.7)', transition: 'all 0.3s',
             }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.color = '#fff' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'; e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)' }}
             >
-              <Icon size={16} />
+              <Icon size={18} />
             </a>
           ))}
         </div>
       </div>
-      <div style={{ textAlign: 'center', color: '#4b5563', fontSize: '0.75rem', marginTop: '2rem' }}>
-        © {new Date().getFullYear()} Weblity. Alle Rechte vorbehalten.
-      </div>
+      <p style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.3)', fontSize: '0.8125rem', marginTop: '2rem' }}>
+        © {new Date().getFullYear()} Weblity. Made with 💙 in Germany.
+      </p>
     </footer>
   )
 }
 
-// === APP ===
-function App() {
+// ============================================================================
+// APP
+// ============================================================================
+
+export default function App() {
   return (
     <>
       <style>{`
-        @keyframes blob { 0%,100%{transform:translate(0,0) scale(1)} 25%{transform:translate(30px,-50px) scale(1.1)} 50%{transform:translate(-20px,20px) scale(0.9)} 75%{transform:translate(20px,40px) scale(1.05)} }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-        @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
-        .hidden { display: none !important; }
-        @media (min-width: 768px) { .md\\:flex { display: flex !important; } }
-        @media (min-width: 640px) { .sm\\:flex-row { flex-direction: row !important; } .sm\\:justify-center { justify-content: center !important; } }
-        .w-full { width: 100%; }
-        ::selection { background: rgba(0,212,255,0.3); }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0a0f1c; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #000; color: #fff; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        ::selection { background: rgba(41, 151, 255, 0.4); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+        @keyframes bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-8px); } }
+        @keyframes scrollPulse { 0%, 100% { opacity: 0.5; transform: translateY(0); } 50% { opacity: 1; transform: translateY(4px); } }
+        @media (min-width: 768px) {
+          .nav-links { display: flex !important; }
+          .menu-btn { display: none !important; }
+        }
       `}</style>
+      <ProgressBar />
       <Navbar />
       <Hero />
       <Services />
       <Packages />
       <Process />
       <Testimonials />
-      <CtaBanner />
+      <CTA />
       <Contact />
       <Footer />
     </>
   )
 }
-
-export default App
