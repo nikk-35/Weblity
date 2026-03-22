@@ -447,7 +447,7 @@ function FadeIn({ children, delay = 0 }: { children: ReactNode; delay?: number }
 
 function Logo() {
   return (
-    <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>
+    <span style={{ fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>
       <span style={{ color: '#fff' }}>web</span>
       <span style={{ background: 'linear-gradient(135deg, #2997ff, #af52de)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>lity</span>
     </span>
@@ -994,22 +994,28 @@ function Datenschutz({ onBack }: { onBack: () => void }) {
 // APP
 // ============================================================================
 
+const FONTS = ['Outfit', 'Manrope', 'Plus Jakarta Sans', 'DM Sans', 'Lexend'] as const
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home')
+  const [fontIndex, setFontIndex] = useState(0)
+  const currentFont = FONTS[fontIndex]
 
   const navigateTo = (page: string) => {
     setCurrentPage(page)
     window.scrollTo(0, 0)
   }
 
+  const nextFont = () => setFontIndex((i) => (i + 1) % FONTS.length)
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Lexend:wght@400;500;600;700;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; font-size: 16px; }
         body { 
-          font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif; 
+          font-family: '${currentFont}', -apple-system, BlinkMacSystemFont, sans-serif; 
           background: #0a0a1a; 
           color: #fff; 
           -webkit-font-smoothing: antialiased;
@@ -1028,17 +1034,37 @@ export default function App() {
         @media (max-width: 767px) {
           html { font-size: 15px; }
           .hero-section { 
-            min-height: auto !important; 
-            padding-top: 5rem !important;
-            padding-bottom: 2rem !important;
+            min-height: 85svh !important; 
+            padding-top: 6rem !important;
           }
-          .hero-section h1 { font-size: 2.5rem !important; }
           section { padding: 4rem 1.25rem !important; }
         }
       `}</style>
       
       <AnimatedBackground />
       <CustomCursor />
+      
+      {/* Font Tester Button - REMOVE AFTER TESTING */}
+      <button
+        onClick={nextFont}
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          left: '20px',
+          zIndex: 9999,
+          padding: '12px 20px',
+          background: 'linear-gradient(135deg, #2997ff, #af52de)',
+          border: 'none',
+          borderRadius: '100px',
+          color: '#fff',
+          fontSize: '14px',
+          fontWeight: 600,
+          cursor: 'pointer',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+        }}
+      >
+        🔤 {currentFont}
+      </button>
       
       {currentPage === 'home' && (
         <>
