@@ -1,5 +1,257 @@
 import { useState, useEffect, useRef, type ReactNode, type CSSProperties } from 'react'
-import { Menu, X, ArrowRight, Check, Globe, Smartphone, ShoppingBag, Code, Phone } from 'lucide-react'
+import { Menu, X, ArrowRight, Check, Globe, Smartphone, ShoppingBag, Code, Phone, Sparkles } from 'lucide-react'
+
+// ============================================================================
+// CUSTOM CURSOR (Desktop only)
+// ============================================================================
+
+function CustomCursor() {
+  const cursorRef = useRef<HTMLDivElement>(null)
+  const trailRef = useRef<HTMLDivElement>(null)
+  const [isHovering, setIsHovering] = useState(false)
+  
+  useEffect(() => {
+    // Skip on mobile
+    if ('ontouchstart' in window) return
+    
+    const cursor = cursorRef.current
+    const trail = trailRef.current
+    if (!cursor || !trail) return
+    
+    let mouseX = 0, mouseY = 0
+    let trailX = 0, trailY = 0
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX = e.clientX
+      mouseY = e.clientY
+      cursor.style.left = mouseX + 'px'
+      cursor.style.top = mouseY + 'px'
+    }
+    
+    const animate = () => {
+      trailX += (mouseX - trailX) * 0.15
+      trailY += (mouseY - trailY) * 0.15
+      trail.style.left = trailX + 'px'
+      trail.style.top = trailY + 'px'
+      requestAnimationFrame(animate)
+    }
+    
+    const handleHover = () => setIsHovering(true)
+    const handleLeave = () => setIsHovering(false)
+    
+    document.addEventListener('mousemove', handleMouseMove)
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', handleHover)
+      el.addEventListener('mouseleave', handleLeave)
+    })
+    animate()
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+    }
+  }, [])
+  
+  // Don't render on mobile
+  if (typeof window !== 'undefined' && 'ontouchstart' in window) return null
+  
+  return (
+    <>
+      <div ref={trailRef} style={{
+        position: 'fixed',
+        width: isHovering ? '60px' : '40px',
+        height: isHovering ? '60px' : '40px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(41, 151, 255, 0.3) 0%, transparent 70%)',
+        transform: 'translate(-50%, -50%)',
+        pointerEvents: 'none',
+        zIndex: 9998,
+        transition: 'width 0.3s, height 0.3s',
+      }} />
+      <div ref={cursorRef} style={{
+        position: 'fixed',
+        width: isHovering ? '20px' : '10px',
+        height: isHovering ? '20px' : '10px',
+        borderRadius: '50%',
+        background: '#fff',
+        transform: 'translate(-50%, -50%)',
+        pointerEvents: 'none',
+        zIndex: 9999,
+        transition: 'width 0.2s, height 0.2s',
+        mixBlendMode: 'difference',
+      }} />
+      <style>{`
+        @media (pointer: fine) {
+          * { cursor: none !important; }
+        }
+      `}</style>
+    </>
+  )
+}
+
+// ============================================================================
+// ANIMATED COUNTER
+// ============================================================================
+
+function AnimatedCounter({ end, suffix = '', duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
+  const [count, setCount] = useState(0)
+  const [hasAnimated, setHasAnimated] = useState(false)
+  const ref = useRef<HTMLSpanElement>(null)
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !hasAnimated) {
+        setHasAnimated(true)
+        let start = 0
+        const step = end / (duration / 16)
+        const timer = setInterval(() => {
+          start += step
+          if (start >= end) {
+            setCount(end)
+            clearInterval(timer)
+          } else {
+            setCount(Math.floor(start))
+          }
+        }, 16)
+      }
+    }, { threshold: 0.5 })
+    
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [end, duration, hasAnimated])
+  
+  return <span ref={ref}>{count}{suffix}</span>
+}
+
+// ============================================================================
+// TILT CARD
+// ============================================================================
+
+function TiltCard({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [transform, setTransform] = useState('')
+  const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 })
+  
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    const rotateX = (y - centerY) / 10
+    const rotateY = (centerX - x) / 10
+    
+    setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`)
+    setGlare({ x: (x / rect.width) * 100, y: (y / rect.height) * 100, opacity: 0.15 })
+  }
+  
+  const handleMouseLeave = () => {
+    setTransform('perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)')
+    setGlare({ x: 50, y: 50, opacity: 0 })
+  }
+  
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        transform,
+        transition: 'transform 0.1s ease-out',
+        position: 'relative',
+        ...style
+      }}
+    >
+      {children}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        borderRadius: 'inherit',
+        background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,${glare.opacity}) 0%, transparent 60%)`,
+        pointerEvents: 'none',
+      }} />
+    </div>
+  )
+}
+
+// ============================================================================
+// TEXT SCRAMBLE
+// ============================================================================
+
+function ScrambleText({ text, className }: { text: string; className?: string }) {
+  const [displayText, setDisplayText] = useState(text)
+  const [isHovered, setIsHovered] = useState(false)
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%'
+  
+  useEffect(() => {
+    if (!isHovered) {
+      setDisplayText(text)
+      return
+    }
+    
+    let iteration = 0
+    const interval = setInterval(() => {
+      setDisplayText(prev => 
+        text.split('').map((char, i) => {
+          if (i < iteration) return text[i]
+          if (char === ' ') return ' '
+          return chars[Math.floor(Math.random() * chars.length)]
+        }).join('')
+      )
+      iteration += 1/3
+      if (iteration >= text.length) clearInterval(interval)
+    }, 30)
+    
+    return () => clearInterval(interval)
+  }, [isHovered, text])
+  
+  return (
+    <span 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={className}
+      style={{ cursor: 'default' }}
+    >
+      {displayText}
+    </span>
+  )
+}
+
+// ============================================================================
+// FLOATING PARTICLES
+// ============================================================================
+
+function FloatingParticles() {
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      {Array.from({ length: 20 }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            width: Math.random() * 4 + 2 + 'px',
+            height: Math.random() * 4 + 2 + 'px',
+            borderRadius: '50%',
+            background: i % 3 === 0 ? '#2997ff' : i % 3 === 1 ? '#af52de' : '#00d4aa',
+            left: Math.random() * 100 + '%',
+            top: Math.random() * 100 + '%',
+            opacity: Math.random() * 0.5 + 0.2,
+            animation: `floatParticle ${Math.random() * 10 + 10}s linear infinite`,
+            animationDelay: `-${Math.random() * 10}s`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes floatParticle {
+          0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+          10% { opacity: 0.5; }
+          90% { opacity: 0.5; }
+          100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  )
+}
 
 // ============================================================================
 // ANIMATED BACKGROUND
@@ -277,7 +529,8 @@ function Navbar() {
 function Hero() {
   return (
     <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8rem 2rem 4rem', position: 'relative', zIndex: 1 }}>
-      <div style={{ maxWidth: '900px', textAlign: 'center' }}>
+      <FloatingParticles />
+      <div style={{ maxWidth: '900px', textAlign: 'center', position: 'relative' }}>
         <FadeIn>
           <div style={{
             display: 'inline-flex',
@@ -289,7 +542,7 @@ function Hero() {
             borderRadius: '100px',
             marginBottom: '2rem',
           }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00d4aa', animation: 'pulse 2s infinite' }} />
+            <Sparkles size={16} color="#00d4aa" style={{ animation: 'pulse 2s infinite' }} />
             <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.875rem', fontWeight: 500 }}>Verfügbar für neue Projekte</span>
           </div>
         </FadeIn>
@@ -310,7 +563,7 @@ function Hero() {
               backgroundSize: '200% 200%',
               animation: 'gradient 5s ease infinite',
             }}>
-              begeistern
+              <ScrambleText text="begeistern" />
             </span>
           </h1>
         </FadeIn>
@@ -338,12 +591,14 @@ function Hero() {
         <FadeIn delay={0.4}>
           <div style={{ marginTop: '4rem', display: 'flex', justifyContent: 'center', gap: '3rem', flexWrap: 'wrap' }}>
             {[
-              { num: '50+', label: 'Projekte' },
-              { num: '100%', label: 'Zufriedenheit' },
-              { num: '48h', label: 'Antwortzeit' },
+              { num: 50, suffix: '+', label: 'Projekte' },
+              { num: 100, suffix: '%', label: 'Zufriedenheit' },
+              { num: 48, suffix: 'h', label: 'Antwortzeit' },
             ].map((stat, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 800, background: 'linear-gradient(135deg, #2997ff, #af52de)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{stat.num}</div>
+                <div style={{ fontSize: '2rem', fontWeight: 800, background: 'linear-gradient(135deg, #2997ff, #af52de)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  <AnimatedCounter end={stat.num} suffix={stat.suffix} />
+                </div>
                 <div style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.875rem' }}>{stat.label}</div>
               </div>
             ))}
@@ -387,23 +642,25 @@ function Services() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '1.5rem' }}>
           {services.map((service, i) => (
             <FadeIn key={i} delay={i * 0.1}>
-              <GlassCard>
-                <div style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '16px',
-                  background: `linear-gradient(135deg, ${service.color}20, ${service.color}10)`,
-                  border: `1px solid ${service.color}30`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '1.5rem',
-                }}>
-                  <service.icon size={28} color={service.color} />
-                </div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.75rem' }}>{service.title}</h3>
-                <p style={{ color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.6 }}>{service.desc}</p>
-              </GlassCard>
+              <TiltCard>
+                <GlassCard>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '16px',
+                    background: `linear-gradient(135deg, ${service.color}20, ${service.color}10)`,
+                    border: `1px solid ${service.color}30`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '1.5rem',
+                  }}>
+                    <service.icon size={28} color={service.color} />
+                  </div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.75rem' }}>{service.title}</h3>
+                  <p style={{ color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.6 }}>{service.desc}</p>
+                </GlassCard>
+              </TiltCard>
             </FadeIn>
           ))}
         </div>
@@ -774,6 +1031,7 @@ export default function App() {
       `}</style>
       
       <AnimatedBackground />
+      <CustomCursor />
       
       {currentPage === 'home' && (
         <>
