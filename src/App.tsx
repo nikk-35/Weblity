@@ -351,7 +351,7 @@ function Navbar() {
               {item}
             </a>
           ))}
-          <GlowButton href="#kontakt">Starten</GlowButton>
+          <GlowButton href="tel:+4917682479005">Starten</GlowButton>
         </div>
 
         <button onClick={() => setMenuOpen(!menuOpen)} className="menu-btn" style={{ display: 'flex', background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '0.5rem' }}>
@@ -419,7 +419,7 @@ function Hero() {
 
         <FadeIn delay={0.4}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-            <GlowButton href="#kontakt" size="lg">
+            <GlowButton href="tel:+4917682479005" size="lg">
               Projekt starten <ArrowRight size={18} />
             </GlowButton>
             <GlowButton href="#pakete" variant="secondary" size="lg">
@@ -557,7 +557,7 @@ function Packages() {
                     ))}
                   </ul>
 
-                  <GlowButton href="#kontakt" variant={pkg.highlight ? 'primary' : 'secondary'}>
+                  <GlowButton href="tel:+4917682479005" variant={pkg.highlight ? 'primary' : 'secondary'}>
                     Auswählen
                   </GlowButton>
                 </Card>
@@ -771,7 +771,7 @@ function CTA() {
             <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1.25rem', marginBottom: '2rem' }}>
               Lass uns gemeinsam etwas Großartiges bauen.
             </p>
-            <GlowButton href="#kontakt" size="lg">
+            <GlowButton href="tel:+4917682479005" size="lg">
               Kostenloses Erstgespräch <ArrowRight size={18} />
             </GlowButton>
           </div>
@@ -782,95 +782,216 @@ function CTA() {
 }
 
 function Contact() {
-  const inputStyle: CSSProperties = {
-    width: '100%', padding: '1rem 1.25rem', borderRadius: '12px', fontSize: '1rem',
-    background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)',
-    color: '#fff', outline: 'none', fontFamily: 'inherit', transition: 'border-color 0.3s, background 0.3s',
-  }
-
   return (
-    <section id="kontakt" style={{ padding: '10rem 2rem', overflow: 'hidden' }}>
-      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+    <section id="kontakt" style={{ padding: '8rem 2rem', overflow: 'hidden' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
         <FadeIn>
-          <p style={{ color: '#2997ff', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center' }}>Kontakt</p>
+          <p style={{ color: '#2997ff', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem' }}>Kontakt</p>
         </FadeIn>
         <FadeIn delay={0.1}>
-          <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 700, textAlign: 'center', marginBottom: '1rem', letterSpacing: '-0.03em' }}>
-            Schreib uns.
+          <h2 style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 700, marginBottom: '1.5rem', letterSpacing: '-0.03em' }}>
+            Ruf einfach an.
           </h2>
         </FadeIn>
         <FadeIn delay={0.2}>
-          <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '1.125rem', textAlign: 'center', marginBottom: '3rem' }}>
-            Wir melden uns innerhalb von 24 Stunden.
+          <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '1.25rem', marginBottom: '2.5rem' }}>
+            Lass uns über dein Projekt sprechen — unverbindlich und kostenlos.
           </p>
         </FadeIn>
-
         <FadeIn delay={0.3}>
-          <Card hover={false}>
-            <form style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }} onSubmit={e => { e.preventDefault(); alert('Nachricht gesendet! ✨') }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: '1.25rem' }}>
-                <input type="text" placeholder="Dein Name" required style={inputStyle}
-                  onFocus={e => { e.currentTarget.style.borderColor = 'rgba(41, 151, 255, 0.5)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)' }}
-                  onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)' }} />
-                <input type="email" placeholder="Deine E-Mail" required style={inputStyle}
-                  onFocus={e => { e.currentTarget.style.borderColor = 'rgba(41, 151, 255, 0.5)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)' }}
-                  onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)' }} />
-              </div>
-              <select style={{ ...inputStyle, color: 'rgba(255, 255, 255, 0.5)' }}>
-                <option value="">Welches Paket?</option>
-                <option>Starter — €499</option>
-                <option>Business — €1.299</option>
-                <option>Premium — €2.999</option>
-                <option>Individuell</option>
-              </select>
-              <textarea placeholder="Erzähl uns von deinem Projekt..." rows={4} required style={{ ...inputStyle, resize: 'none' }}
-                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(41, 151, 255, 0.5)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)' }} />
-              <button type="submit" style={{
-                width: '100%', padding: '1rem', borderRadius: '12px', fontSize: '1rem', fontWeight: 600,
-                color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                background: '#2997ff', transition: 'all 0.3s',
-              }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#0077ed'; e.currentTarget.style.boxShadow = '0 0 0 4px rgba(41, 151, 255, 0.3)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#2997ff'; e.currentTarget.style.boxShadow = 'none' }}
-              >
-                Nachricht senden
-              </button>
-            </form>
-          </Card>
+          <a href="tel:+4917682479005" style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
+            padding: '1.25rem 2.5rem', borderRadius: '100px',
+            background: 'linear-gradient(135deg, #2997ff, #af52de)',
+            color: '#fff', fontSize: '1.5rem', fontWeight: 700,
+            textDecoration: 'none', fontFamily: 'SF Pro Display, sans-serif',
+            boxShadow: '0 20px 50px rgba(41, 151, 255, 0.3)',
+            transition: 'all 0.3s ease',
+          }}>
+            📞 0176 82479005
+          </a>
         </FadeIn>
       </div>
     </section>
   )
 }
 
-function Footer() {
+function Footer({ onNavigate }: { onNavigate: (page: string) => void }) {
   return (
     <footer style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', padding: '3rem 2rem' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
-        <Logo />
+        <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('home'); }} style={{ textDecoration: 'none' }}><Logo /></a>
         <div style={{ display: 'flex', gap: '2rem', fontSize: '0.875rem' }}>
-          <a href="#" style={{ color: 'rgba(255, 255, 255, 0.5)', textDecoration: 'none' }}>Impressum</a>
-          <a href="#" style={{ color: 'rgba(255, 255, 255, 0.5)', textDecoration: 'none' }}>Datenschutz</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('impressum'); }} style={{ color: 'rgba(255, 255, 255, 0.5)', textDecoration: 'none', cursor: 'pointer' }}>Impressum</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('datenschutz'); }} style={{ color: 'rgba(255, 255, 255, 0.5)', textDecoration: 'none', cursor: 'pointer' }}>Datenschutz</a>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          {[Instagram, Linkedin, Mail].map((Icon, i) => (
-            <a key={i} href="#" style={{
-              width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', color: 'rgba(255, 255, 255, 0.7)', transition: 'all 0.3s',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.color = '#fff' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'; e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)' }}
-            >
-              <Icon size={18} />
-            </a>
-          ))}
+          <a href="https://instagram.com" target="_blank" rel="noopener" style={{
+            width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', color: 'rgba(255, 255, 255, 0.7)', transition: 'all 0.3s',
+          }}>
+            <Instagram size={18} />
+          </a>
         </div>
       </div>
       <p style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.3)', fontSize: '0.8125rem', marginTop: '2rem' }}>
-        © {new Date().getFullYear()} Weblity. Made with 💙 in Germany.
+        © {new Date().getFullYear()} Weblity. Alle Rechte vorbehalten.
       </p>
     </footer>
+  )
+}
+
+// Impressum Page
+function Impressum({ onBack }: { onBack: () => void }) {
+  return (
+    <div style={{ minHeight: '100vh', background: '#000', padding: '6rem 2rem 4rem' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <button onClick={onBack} style={{
+          background: 'none', border: 'none', color: '#2997ff', fontSize: '1rem',
+          cursor: 'pointer', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem'
+        }}>
+          ← Zurück
+        </button>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '2rem', fontFamily: 'SF Pro Display, sans-serif' }}>Impressum</h1>
+        
+        <div style={{ color: 'rgba(255,255,255,0.8)', lineHeight: 1.8, fontSize: '1rem' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Angaben gemäß § 5 TMG</h2>
+          <p>
+            Weblity<br />
+            [Dein vollständiger Name]<br />
+            [Straße und Hausnummer]<br />
+            [PLZ Ort]
+          </p>
+          
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Kontakt</h2>
+          <p>
+            Telefon: 0176 82479005<br />
+            E-Mail: [deine@email.de]
+          </p>
+          
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Umsatzsteuer-ID</h2>
+          <p>
+            Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br />
+            [Deine USt-ID, falls vorhanden, sonst diesen Abschnitt entfernen]
+          </p>
+          
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
+          <p>
+            [Dein vollständiger Name]<br />
+            [Straße und Hausnummer]<br />
+            [PLZ Ort]
+          </p>
+          
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Streitschlichtung</h2>
+          <p>
+            Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: 
+            <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener" style={{ color: '#2997ff' }}> https://ec.europa.eu/consumers/odr/</a>.<br />
+            Unsere E-Mail-Adresse finden Sie oben im Impressum.<br /><br />
+            Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+          </p>
+          
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Haftung für Inhalte</h2>
+          <p>
+            Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. 
+            Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen 
+            zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.
+          </p>
+          
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Haftung für Links</h2>
+          <p>
+            Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. 
+            Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen.
+          </p>
+          
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Urheberrecht</h2>
+          <p>
+            Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. 
+            Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes 
+            bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Datenschutz Page
+function Datenschutz({ onBack }: { onBack: () => void }) {
+  return (
+    <div style={{ minHeight: '100vh', background: '#000', padding: '6rem 2rem 4rem' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <button onClick={onBack} style={{
+          background: 'none', border: 'none', color: '#2997ff', fontSize: '1rem',
+          cursor: 'pointer', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem'
+        }}>
+          ← Zurück
+        </button>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '2rem', fontFamily: 'SF Pro Display, sans-serif' }}>Datenschutzerklärung</h1>
+        
+        <div style={{ color: 'rgba(255,255,255,0.8)', lineHeight: 1.8, fontSize: '1rem' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>1. Datenschutz auf einen Blick</h2>
+          
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.75rem', color: '#fff' }}>Allgemeine Hinweise</h3>
+          <p>
+            Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, 
+            wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.
+          </p>
+          
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.75rem', color: '#fff' }}>Datenerfassung auf dieser Website</h3>
+          <p>
+            <strong>Wer ist verantwortlich für die Datenerfassung auf dieser Website?</strong><br />
+            Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen Kontaktdaten können Sie dem Impressum dieser Website entnehmen.
+          </p>
+          
+          <p style={{ marginTop: '1rem' }}>
+            <strong>Wie erfassen wir Ihre Daten?</strong><br />
+            Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen, z.B. wenn Sie uns per Telefon kontaktieren.
+            Andere Daten werden automatisch oder nach Ihrer Einwilligung beim Besuch der Website durch unsere IT-Systeme erfasst. 
+            Das sind vor allem technische Daten (z.B. Internetbrowser, Betriebssystem oder Uhrzeit des Seitenaufrufs).
+          </p>
+          
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>2. Hosting</h2>
+          <p>
+            Wir hosten die Inhalte unserer Website bei Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA.
+            Details entnehmen Sie der Datenschutzerklärung von Vercel: 
+            <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener" style={{ color: '#2997ff' }}> https://vercel.com/legal/privacy-policy</a>
+          </p>
+          
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>3. Allgemeine Hinweise und Pflichtinformationen</h2>
+          
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.75rem', color: '#fff' }}>Datenschutz</h3>
+          <p>
+            Die Betreiber dieser Seiten nehmen den Schutz Ihrer persönlichen Daten sehr ernst. 
+            Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend den gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung.
+          </p>
+          
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.75rem', color: '#fff' }}>Hinweis zur verantwortlichen Stelle</h3>
+          <p>
+            Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:<br /><br />
+            Weblity<br />
+            [Dein Name]<br />
+            [Adresse]<br /><br />
+            Telefon: 0176 82479005<br />
+            E-Mail: [deine@email.de]
+          </p>
+          
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>4. Ihre Rechte</h2>
+          <p>
+            Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten 
+            personenbezogenen Daten zu erhalten. Sie haben außerdem ein Recht, die Berichtigung oder Löschung dieser Daten zu verlangen. 
+            Wenn Sie eine Einwilligung zur Datenverarbeitung erteilt haben, können Sie diese Einwilligung jederzeit für die Zukunft widerrufen. 
+            Außerdem haben Sie das Recht, unter bestimmten Umständen die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen.
+          </p>
+          
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>5. SSL- bzw. TLS-Verschlüsselung</h2>
+          <p>
+            Diese Seite nutzt aus Sicherheitsgründen und zum Schutz der Übertragung vertraulicher Inhalte eine SSL- bzw. TLS-Verschlüsselung. 
+            Eine verschlüsselte Verbindung erkennen Sie daran, dass die Adresszeile des Browsers von "http://" auf "https://" wechselt 
+            und an dem Schloss-Symbol in Ihrer Browserzeile.
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -880,12 +1001,12 @@ function Footer() {
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(true)
-  const [contentReady, setContentReady] = useState(false)
+  const [currentPage, setCurrentPage] = useState('home')
 
-  useEffect(() => {
-    // Start loading content immediately but don't show until intro is done
-    setContentReady(true)
-  }, [])
+  const navigateTo = (page: string) => {
+    setCurrentPage(page)
+    window.scrollTo(0, 0)
+  }
 
   return (
     <>
@@ -948,16 +1069,22 @@ export default function App() {
         }
       `}</style>
       <div style={{ overflowX: 'hidden', width: '100%', maxWidth: '100vw' }}>
-        <ProgressBar />
-        <Navbar />
-        <Hero />
-        <Services />
-        <Packages />
-        <Process />
-        <Portfolio />
-        <CTA />
-        <Contact />
-        <Footer />
+        {currentPage === 'home' && (
+          <>
+            <ProgressBar />
+            <Navbar />
+            <Hero />
+            <Services />
+            <Packages />
+            <Process />
+            <Portfolio />
+            <CTA />
+            <Contact />
+            <Footer onNavigate={navigateTo} />
+          </>
+        )}
+        {currentPage === 'impressum' && <Impressum onBack={() => navigateTo('home')} />}
+        {currentPage === 'datenschutz' && <Datenschutz onBack={() => navigateTo('home')} />}
       </div>
     </>
   )
