@@ -1,5 +1,8 @@
-import { useState, useEffect, useRef, type ReactNode, type CSSProperties } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense, type ReactNode, type CSSProperties } from 'react'
 import { Menu, X, ArrowRight, Check, Star, Globe, Smartphone, ShoppingBag, Code, Mail, Instagram, Linkedin, Sparkles, Play } from 'lucide-react'
+
+// Lazy load 3D intro for better performance
+const Intro3D = lazy(() => import('./Intro3D'))
 
 // ============================================================================
 // INTRO ANIMATION
@@ -1004,7 +1007,11 @@ export default function App() {
 
   return (
     <>
-      {showIntro && <IntroAnimation onComplete={() => setShowIntro(false)} />}
+      {showIntro && (
+        <Suspense fallback={<div style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 9999 }} />}>
+          <Intro3D onComplete={() => setShowIntro(false)} />
+        </Suspense>
+      )}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
