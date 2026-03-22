@@ -528,9 +528,9 @@ function Navbar() {
 
 function Hero() {
   return (
-    <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8rem 2rem 4rem', position: 'relative', zIndex: 1 }}>
+    <section className="hero-section" style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6rem 1.5rem 3rem', position: 'relative', zIndex: 1 }}>
       <FloatingParticles />
-      <div style={{ maxWidth: '900px', textAlign: 'center', position: 'relative' }}>
+      <div style={{ maxWidth: '900px', textAlign: 'center', position: 'relative', width: '100%' }}>
         <FadeIn>
           <div style={{
             display: 'inline-flex',
@@ -1028,6 +1028,13 @@ export default function App() {
         
         @media (max-width: 767px) {
           html { font-size: 15px; }
+          .hero-section { 
+            min-height: auto !important; 
+            padding-top: 5rem !important;
+            padding-bottom: 2rem !important;
+          }
+          .hero-section h1 { font-size: 2.5rem !important; }
+          section { padding: 4rem 1.25rem !important; }
         }
       `}</style>
       
