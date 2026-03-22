@@ -1,0 +1,9 @@
+# Weblity - Robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://weblity.de/sitemap.xml
+
+# Crawl-delay (optional, be nice to servers)
+Crawl-delay: 1
