@@ -447,7 +447,7 @@ function FadeIn({ children, delay = 0 }: { children: ReactNode; delay?: number }
 
 function Logo() {
   return (
-    <span style={{ fontFamily: 'SF Pro Display, -apple-system, sans-serif', fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.03em' }}>
+    <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>
       <span style={{ color: '#fff' }}>web</span>
       <span style={{ background: 'linear-gradient(135deg, #2997ff, #af52de)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>lity</span>
     </span>
@@ -1005,16 +1005,17 @@ export default function App() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; font-size: 16px; }
         body { 
-          font-family: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+          font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif; 
           background: #0a0a1a; 
           color: #fff; 
           -webkit-font-smoothing: antialiased;
           overflow-x: hidden;
         }
+        h1, h2, h3 { font-family: 'Syne', sans-serif; }
         ::selection { background: rgba(41, 151, 255, 0.4); }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0a0a1a; }
