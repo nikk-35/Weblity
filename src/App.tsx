@@ -858,28 +858,22 @@ function Impressum({ onBack }: { onBack: () => void }) {
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Angaben gemäß § 5 TMG</h2>
           <p>
             Weblity<br />
-            [Dein vollständiger Name]<br />
-            [Straße und Hausnummer]<br />
-            [PLZ Ort]
+            Nikk Jahn<br />
+            Am Weingarten 7<br />
+            35415 Pohlheim
           </p>
           
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Kontakt</h2>
           <p>
             Telefon: 0176 82479005<br />
-            E-Mail: [deine@email.de]
-          </p>
-          
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Umsatzsteuer-ID</h2>
-          <p>
-            Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br />
-            [Deine USt-ID, falls vorhanden, sonst diesen Abschnitt entfernen]
+            E-Mail: info@weblity.de
           </p>
           
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
           <p>
-            [Dein vollständiger Name]<br />
-            [Straße und Hausnummer]<br />
-            [PLZ Ort]
+            Nikk Jahn<br />
+            Am Weingarten 7<br />
+            35415 Pohlheim
           </p>
           
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>Streitschlichtung</h2>
@@ -969,10 +963,10 @@ function Datenschutz({ onBack }: { onBack: () => void }) {
           <p>
             Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:<br /><br />
             Weblity<br />
-            [Dein Name]<br />
-            [Adresse]<br /><br />
+            Nikk Jahn<br />
+            Am Weingarten 7, 35415 Pohlheim<br /><br />
             Telefon: 0176 82479005<br />
-            E-Mail: [deine@email.de]
+            E-Mail: info@weblity.de
           </p>
           
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>4. Ihre Rechte</h2>
