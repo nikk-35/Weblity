@@ -994,32 +994,28 @@ function Datenschutz({ onBack }: { onBack: () => void }) {
 // APP
 // ============================================================================
 
-const FONTS = ['Outfit', 'Manrope', 'Plus Jakarta Sans', 'DM Sans', 'Lexend'] as const
-
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home')
-  const [fontIndex, setFontIndex] = useState(0)
-  const currentFont = FONTS[fontIndex]
 
   const navigateTo = (page: string) => {
     setCurrentPage(page)
     window.scrollTo(0, 0)
   }
 
-  const nextFont = () => setFontIndex((i) => (i + 1) % FONTS.length)
-
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Lexend:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; font-size: 16px; }
         body { 
-          font-family: '${currentFont}', -apple-system, BlinkMacSystemFont, sans-serif; 
+          font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; 
           background: #0a0a1a; 
           color: #fff; 
           -webkit-font-smoothing: antialiased;
           overflow-x: hidden;
+        }
+        h1, h2, h3 { font-family: 'Lexend', sans-serif;
         }
         ::selection { background: rgba(41, 151, 255, 0.4); }
         ::-webkit-scrollbar { width: 8px; }
@@ -1043,28 +1039,6 @@ export default function App() {
       
       <AnimatedBackground />
       <CustomCursor />
-      
-      {/* Font Tester Button - REMOVE AFTER TESTING */}
-      <button
-        onClick={nextFont}
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          left: '20px',
-          zIndex: 9999,
-          padding: '12px 20px',
-          background: 'linear-gradient(135deg, #2997ff, #af52de)',
-          border: 'none',
-          borderRadius: '100px',
-          color: '#fff',
-          fontSize: '14px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-        }}
-      >
-        🔤 {currentFont}
-      </button>
       
       {currentPage === 'home' && (
         <>
